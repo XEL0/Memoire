@@ -3,7 +3,6 @@
 
 #include <QPainter>
 #include <QWidget>
-#include <QPointF>
 #include <vector>
 #include "../model/Graph.hpp"
 

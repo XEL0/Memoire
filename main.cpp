@@ -16,14 +16,14 @@ int main(int argc, char *argv[]) {
     window.resize(width, height);
 
     QPalette palette = window.palette();
-    palette.setColor(QPalette::Window, QColor(227, 221, 206));
+    palette.setColor(QPalette::Window, QColor(250, 248, 240));
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
     auto graph = std::make_shared<ComparabilityGraph>(10, 2, 6, 4, height);
     DrawableComparabilityGraph drawableGraph(&window);
-    drawableGraph.linkGraph(graph);
     drawableGraph.resize(width, height);
+    drawableGraph.linkGraph(graph);
 
     window.show();
 

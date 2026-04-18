@@ -6,6 +6,11 @@
 #include <vector>
 #include "../model/Graph.hpp"
 
+inline QColor GREEN = QColor(5, 203, 123);
+inline QColor PURPLE = QColor(135, 82, 214);
+inline QColor CYAN = QColor(62, 130, 182);
+inline QColor RED = QColor(218, 54, 12);
+
 struct DrawableVertex {
     Vertex v{};
     QPointF position;
@@ -16,6 +21,7 @@ class DrawableGraph : public QWidget {
     Q_OBJECT
 
 protected:
+    float padding_ratio = 0.05f;
     std::shared_ptr<Graph> G;
     std::vector<DrawableVertex> vertices;
 

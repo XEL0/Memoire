@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 
 #include "randomGenerator.hpp"
 
@@ -26,9 +25,9 @@ dim(dim){
 void ComparabilityGraph::generateOrdering() {
     ordering.resize(V);
     for (unsigned i = 0; i < V; i++) {
+        ordering[i] = {i, {}};
         for (unsigned j = 0; j < dim; j++) {
-            ordering[i].push_back(rand());
-            std::cout << ordering[i][j] << " ";
+            ordering[i].dimensions.push_back(rand());
         }
     }
     embedded = true;
@@ -38,18 +37,16 @@ void ComparabilityGraph::computeEdgesSet() {
     for (unsigned i = 0; i < V; i++) {
         for (unsigned j = 0; j < i; j++) {
             const bool smaller = std::ranges::all_of(
-                std::views::zip(ordering[i], ordering[j]),
+                std::views::zip(ordering[i].dimensions, ordering[j].dimensions),
                 [](auto pair) { auto [a, b] = pair; return a < b; });
 
             if (not isInV1(i)) continue;
             const bool greater = std::ranges::all_of(
-                std::views::zip(ordering[i], ordering[j]),
+                std::views::zip(ordering[i].dimensions, ordering[j].dimensions),
                 [](auto pair) { auto [a, b] = pair; return a > b; });
 
-            if (smaller or greater) {
-                E->push_back({i, j});
-                std::cout << "(" << i << ", " << j << ")" << std::endl;
-            }
+            if (smaller or greater) E->push_back({i, j});
+
         }
     }
 }
@@ -61,20 +58,16 @@ void ComparabilityGraph::computeBipartiteEdgesSet() {
             bool smaller;
             if (isInV1(i)) {
                 smaller = std::ranges::all_of(
-                std::views::zip(ordering[i], ordering[j]),
+                std::views::zip(ordering[i].dimensions, ordering[j].dimensions),
                 [](auto pair) { auto [a, b] = pair; return a < b; });
             } else {
                 smaller = std::ranges::all_of(
-                std::views::zip(ordering[i], ordering[j]),
+                std::views::zip(ordering[i].dimensions, ordering[j].dimensions),
                 [](auto pair) { auto [a, b] = pair; return a > b; });
             }
-            if (smaller) {
-                E->push_back({i, j});
-                std::cout << "(" << i << ", " << j << ")" << std::endl;
-            }
+            if (smaller) E->push_back({i, j});
         }
     }
-
 }
 
 void ComparabilityGraph::constructV2(const unsigned q) {

@@ -10,6 +10,10 @@
 
 using Vertex = unsigned;
 using Edge = std::pair<Vertex, Vertex>;
+struct EmbeddedVertex {
+    Vertex v;
+    std::vector<unsigned> dimensions;
+};
 
 class Graph {
 protected:
@@ -27,7 +31,7 @@ public:
     virtual bool isEmbedded() const;
 
     auto vertices() const {
-        return std::views::iota(0, static_cast<int>(V));
+        return std::views::iota(Vertex{0}, V);
     }
 
     auto edges() const {
@@ -52,7 +56,7 @@ private:
     RandomGenerator rand;
 protected:
     const unsigned dim;
-    std::vector<std::vector<unsigned>> ordering;
+    std::vector<EmbeddedVertex> ordering;
 
     void generateOrdering();
     void computeEdgesSet();

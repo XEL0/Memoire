@@ -6,12 +6,18 @@
 #include <vector>
 #include "../model/Graph.hpp"
 
+struct DrawableVertex {
+    Vertex v{};
+    QPointF position;
+    QColor color;
+};
+
 class DrawableGraph : public QWidget {
     Q_OBJECT
 
 protected:
     std::shared_ptr<Graph> G;
-    std::vector<std::pair<QPointF, QColor>> vertices;
+    std::vector<DrawableVertex> vertices;
 
     virtual void embed();
     virtual std::unique_ptr<QPainter> initializePainter();

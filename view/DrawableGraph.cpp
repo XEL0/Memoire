@@ -13,7 +13,10 @@ void DrawableGraph::linkGraph(const std::shared_ptr<Graph>& G) {
 }
 
 void DrawableGraph::embed() {
-    RandomGenerator rand(0, this->size().width());
+    const unsigned h = this->height();
+    const unsigned pad = static_cast<unsigned>(padding_ratio) * h;
+
+    RandomGenerator rand(pad , h - pad);
     for (const auto v : G->vertices()) {
         this->vertices.push_back(
             {v, QPointF(rand(), rand()), CYAN}
@@ -35,7 +38,7 @@ std::unique_ptr<QPainter> DrawableGraph::initializePainter() {
 
 void DrawableGraph::resetPainter(const std::unique_ptr<QPainter> &painter) const {
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setPen(QPen(Qt::black, 1));
+    painter->setPen(QPen(Qt::black, this->height() * 1./900));
 }
 
 void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
@@ -46,14 +49,18 @@ void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
 
 void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const {
     float radius = static_cast<float>(this->height()) * 0.02f;
+    float writing_size = static_cast<float>(this->height()) * 1.5f/900;
     for (const auto& [v, p, color] : this->vertices) {
         painter->setPen(Qt::NoPen);
         painter->setBrush(color);
         painter->drawEllipse(p, radius, radius);
 
-        painter->setPen(QPen(Qt::white, 1.5));
+        painter->setPen(QPen(Qt::white, writing_size));
 
         QRectF textRect(p.x() - radius, p.y() - radius, 2 * radius, 2 * radius);
+        QFont font = painter->font();
+        font.setPointSizeF(radius * 0.8);
+        painter->setFont(font);
         painter->drawText(textRect, Qt::AlignCenter, QString::number(v));
     }
 
@@ -62,16 +69,13 @@ void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const
 
 void DrawableComparabilityGraph::embed() {
     const auto G2 = static_pointer_cast<ComparabilityGraph>(G);
-    const double ww = window()->size().width();
-    const double wh = window()->size().height();
-    const double w = this->width();
+    const double size = G2->getUB();
     const double h = this->height();
-    const double padX = padding_ratio * w;
-    const double padY = padding_ratio * h;
+    const double pad = padding_ratio * h;
 
     for (auto& [v, pos] : G2->embedding()) {
-        const double x = padX + (pos[0] / ww) * (w - 2.0 * padX);
-        const double y = padY + (pos[1] / wh) * (h - 2.0 * padY);
+        const double x = pad + (pos[0] / size) * (h - 2.0 * pad);
+        const double y = pad + (pos[1] / size) * (h - 2.0 * pad);
 
         this->vertices.push_back(
             {v,

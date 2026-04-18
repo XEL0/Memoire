@@ -55,6 +55,7 @@ class ComparabilityGraph : public Graph {
 private:
     RandomGenerator rand;
 protected:
+    const unsigned ub;
     const unsigned dim;
     std::vector<EmbeddedVertex> ordering;
 
@@ -71,6 +72,8 @@ public:
     auto embedding() const {
         return std::views::all(ordering);
     }
+
+    virtual unsigned getUB() const { return ub; }
 };
 
 #endif //MEMOIRE_GRAPH_HPP

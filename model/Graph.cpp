@@ -16,8 +16,8 @@ Graph::Graph(const unsigned V): V(V) {
 
 bool Graph::isEmbedded() const { return embedded; }
 
-ComparabilityGraph::ComparabilityGraph(const unsigned V, const unsigned dim, const unsigned ub) : Graph(V), rand(0, ub),
-dim(dim){
+ComparabilityGraph::ComparabilityGraph(const unsigned V, const unsigned dim, const unsigned ub) :
+    Graph(V), rand(0, ub), ub(ub), dim(dim) {
     this->generateOrdering();
     this->computeEdgesSet();
 }
@@ -81,8 +81,8 @@ void ComparabilityGraph::constructV2(const unsigned q) {
 }
 
 ComparabilityGraph::ComparabilityGraph(const unsigned V, const unsigned dim,
-    const unsigned p, const unsigned q, const unsigned ub) : Graph(V),
-    rand(0, ub), dim(dim) {
+    const unsigned p, const unsigned q, const unsigned ub) :
+    Graph(V), rand(0, ub), dim(dim), ub(ub) {
     bipartite = true;
     assert(p + q == V);
     this->generateOrdering();

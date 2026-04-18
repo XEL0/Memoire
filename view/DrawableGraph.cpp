@@ -18,16 +18,21 @@ void DrawableGraph::embed() {
 
     RandomGenerator rand(pad , h - pad);
     for (const auto v : G->vertices()) {
-        this->vertices.push_back(
-            {v, QPointF(rand(), rand()), CYAN}
-            );
+        this->vertices[v] = {
+            QPointF(rand(), rand()),
+            CYAN
+        };
     }
 }
 
+void DrawableGraph::backgroundPaint(const std::unique_ptr<QPainter>&) {}
+void DrawableGraph::foregroundPaint(const std::unique_ptr<QPainter>&) {}
 void DrawableGraph::paintEvent(QPaintEvent*) {
-    auto painter = initializePainter();
+    const auto painter = initializePainter();
+    this->backgroundPaint(painter);
     this->drawEdges(painter);
     this->drawVertices(painter);
+    this->foregroundPaint(painter);
 }
 
 std::unique_ptr<QPainter> DrawableGraph::initializePainter() {
@@ -43,14 +48,20 @@ void DrawableGraph::resetPainter(const std::unique_ptr<QPainter> &painter) const
 
 void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
     for (const auto& [u, v] : G->edges()) {
-        painter->drawLine(this->vertices[u].position, this->vertices[v].position);
+        const auto [position_u, color_u] = this->vertices.find(u)->second;
+        const auto [position_v, color_v] = this->vertices.find(v)->second;
+        painter->drawLine(position_u, position_v);
     }
 }
 
 void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const {
-    float radius = static_cast<float>(this->height()) * 0.02f;
-    float writing_size = static_cast<float>(this->height()) * 1.5f/900;
-    for (const auto& [v, p, color] : this->vertices) {
+    const float radius = static_cast<float>(this->height()) * 0.02f;
+    const float writing_size = static_cast<float>(this->height()) * 1.5f/900;
+
+    for (const auto& [v, dv] : this->vertices) {
+        const auto& p = dv.position;
+        const auto& color = dv.color;
+
         painter->setPen(Qt::NoPen);
         painter->setBrush(color);
         painter->drawEllipse(p, radius, radius);
@@ -67,29 +78,36 @@ void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const
     this->resetPainter(painter);
 }
 
+
+
 void DrawableComparabilityGraph::embed() {
     const auto G2 = static_pointer_cast<ComparabilityGraph>(G);
-    const double size = G2->getUB();
-    const double h = this->height();
-    const double pad = padding_ratio * h;
+    this->point_space_bound = {0, G2->getUB()};
 
     for (auto& [v, pos] : G2->embedding()) {
-        const double x = pad + (pos[0] / size) * (h - 2.0 * pad);
-        const double y = pad + (pos[1] / size) * (h - 2.0 * pad);
-
-        this->vertices.push_back(
-            {v,
-             QPointF(x, h - y),
-             G2->isInV1(v) ? CYAN : RED}
-        );
+        auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
+        this->vertices[v] = {
+            QPointF(x, this->height() - y),
+            G2->isInV1(v) ? CYAN : RED
+        };
     }
 }
 
+QPointF DrawableComparabilityGraph::normalize(QPointF coordinate) const {
+    const double size = this->point_space_bound.second;
+    const double h = this->height();
+    const double pad = padding_ratio * h;
+
+    return {pad + (coordinate.x() / size) * (h - 2.0 * pad),
+               pad + (coordinate.y() / size) * (h - 2.0 * pad)};
+}
+
 void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
-    float length = static_cast<float>(this->height()) * 0.1f;
+    const float length = static_cast<float>(this->height()) * 0.1f;
     painter->setPen(QPen(Qt::darkGray, 1, Qt::DashLine, Qt::RoundCap));
 
-    for (const auto& [v, p, color] : this->vertices) {
+    for (const auto& [v, dv] : this->vertices) {
+        const auto& p = dv.position;
         if (G->isBipartite() and G->isInV1(v)) continue;
         painter->drawLine(p + QPointF(-length, 0), p);
         painter->drawLine(p + QPointF(0, length), p);
@@ -97,9 +115,11 @@ void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>
     this->resetPainter(painter);
 }
 
-void DrawableComparabilityGraph::paintEvent(QPaintEvent *event) {
-    auto painter = initializePainter();
+void DrawableComparabilityGraph::backgroundPaint(const std::unique_ptr<QPainter>& painter) {
     this->drawComparisons(painter);
-    this->drawEdges(painter);
-    this->drawVertices(painter);
+}
+
+void DrawableComparabilityGraph::foregroundPaint(const std::unique_ptr<QPainter>& painter) {
+    auto [w, h] = normalize(QPointF(0, this->height() - line));
+    painter->drawLine(QPointF(0, h), QPointF(this->width(), h));
 }

@@ -28,30 +28,31 @@ public:
     explicit Graph(unsigned V);
     virtual ~Graph() = default;
 
-    virtual bool isEmbedded() const;
+    [[nodiscard]] virtual bool isEmbedded() const;
 
-    auto vertices() const {
+    [[nodiscard]] auto vertices() const {
         return std::views::iota(Vertex{0}, V);
     }
 
-    auto edges() const {
+    [[nodiscard]] auto edges() const {
         return std::views::all(*E);
     }
 
-    virtual bool isInV2(const Vertex v) const {
+    [[nodiscard]] virtual bool isInV2(const Vertex v) const {
         return V2->contains(v);
     }
 
-    virtual bool isInV1(const Vertex v) const {
+    [[nodiscard]] virtual bool isInV1(const Vertex v) const {
         return not V2->contains(v);
     }
 
-    virtual bool isBipartite() const { return bipartite; }
+    [[nodiscard]] virtual bool isBipartite() const { return bipartite; }
 
 };
 
 
 class ComparabilityGraph : public Graph {
+    friend class BicliquePartitioner;
 private:
     RandomGenerator rand;
 protected:
@@ -69,11 +70,11 @@ public:
     ComparabilityGraph(unsigned V, unsigned dim, unsigned p, unsigned q, unsigned ub);
     ~ComparabilityGraph() override = default;
 
-    auto embedding() const {
+    [[nodiscard]] auto embedding() const {
         return std::views::all(ordering);
     }
 
-    virtual unsigned getUB() const { return ub; }
+    [[nodiscard]] virtual unsigned getUB() const { return ub; }
 };
 
 #endif //MEMOIRE_GRAPH_HPP

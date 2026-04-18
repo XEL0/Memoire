@@ -12,10 +12,12 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(${PROJECT_NAME}
         main.cpp
-        model/Graph.hpp
         view/DrawableGraph.cpp
+        model/Graph.hpp
         model/Graph.cpp
         model/randomGenerator.hpp
+        model/Algorithms.hpp
+        model/Algorithms.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

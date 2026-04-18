@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QApplication>
 
+#include "model/Algorithms.hpp"
 #include "model/Graph.hpp"
 #include "view/DrawableGraph.hpp"
 
@@ -21,12 +22,19 @@ int main(int argc, char *argv[]) {
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
-    unsigned V = 10;
+    unsigned V = 9;
     //auto graph = std::make_shared<ComparabilityGraph>(V, 2, V * 100);
-    auto graph = std::make_shared<ComparabilityGraph>(V, 2, 5, 5, V * 100);
+    //auto graph = std::make_shared<ComparabilityGraph>(V, 2, V/2, V/2, V * 100);
+    auto graph = std::make_shared<ComparabilityGraph>(9, 2, 4, 5, 900);
     DrawableComparabilityGraph drawableGraph(&window);
+    BicliquePartitioner partitioner = BicliquePartitioner();
+    auto l = partitioner.partition(graph);
+    std::cout << l << std::endl;
+    //double l = 100;
+
     drawableGraph.resize(size, size);
     drawableGraph.linkGraph(graph);
+    drawableGraph.addLine(l);
 
     window.show();
 

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "randomGenerator.hpp"
+#include "RandomGenerator.hpp"
 
 Graph::Graph(const unsigned V, std::unique_ptr<std::vector<Edge>> E): V(V), E(std::move(E)) {
     V2 = std::make_unique<std::unordered_set<Vertex>>();

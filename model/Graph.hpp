@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "randomGenerator.hpp"
+#include "RandomGenerator.hpp"
 
 using Vertex = unsigned;
 using Edge = std::pair<Vertex, Vertex>;

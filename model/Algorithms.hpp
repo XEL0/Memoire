@@ -9,10 +9,10 @@ class Algorithms {
 class BicliquePartitioner : public Algorithms {
 protected:
     double findHyperplane(std::vector<EmbeddedVertex>& ordering, unsigned dim);
-
+    double adjustHyperplane(std::vector<EmbeddedVertex>& ordering, double hyperplane);
 public:
     BicliquePartitioner();
-    double partition(const std::shared_ptr<ComparabilityGraph>& G);
+    double partition(const std::shared_ptr<ComparabilityGraph>& G, bool render=true);
 };
 
 

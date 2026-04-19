@@ -1,4 +1,5 @@
 #include "DrawableGraph.hpp"
+#include "../model/RandomGenerator.hpp"
 
 #include <iostream>
 #include <ostream>
@@ -18,9 +19,23 @@ void DrawableGraph::embed() {
 
     RandomGenerator rand(pad , h - pad);
     for (const auto v : G->vertices()) {
-        this->vertices[v] = {
+        this->vertices[*v] = {
             QPointF(rand(), rand()),
             CYAN
+        };
+    }
+}
+
+void DrawableBipartiteGraph::embed() {
+    const auto G2 = std::dynamic_pointer_cast<BipartiteGraph>(G);
+    const unsigned h = this->height();
+    const unsigned pad = static_cast<unsigned>(padding_ratio) * h;
+
+    RandomGenerator rand(pad , h - pad);
+    for (const auto v : G->vertices()) {
+        this->vertices[*v] = {
+            QPointF(rand(), rand()),
+            G2->isInV1(*v) ? CYAN : RED
         };
     }
 }
@@ -48,8 +63,8 @@ void DrawableGraph::resetPainter(const std::unique_ptr<QPainter> &painter) const
 
 void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
     for (const auto& [u, v] : G->edges()) {
-        const auto [position_u, color_u] = this->vertices.find(u)->second;
-        const auto [position_v, color_v] = this->vertices.find(v)->second;
+        const auto [position_u, color_u] = this->vertices.at(u);
+        const auto [position_v, color_v] = this->vertices.at(v);
         painter->drawLine(position_u, position_v);
     }
 }
@@ -81,8 +96,21 @@ void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const
 
 
 void DrawableComparabilityGraph::embed() {
-    const auto G2 = static_pointer_cast<ComparabilityGraph>(G);
-    this->point_space_bound = {0, G2->getUB()};
+    const auto G2 = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    this->point_space_bound = {0, G2->getPointSpaceLimit()};
+
+    for (auto& [v, pos] : G2->embedding()) {
+        auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
+        this->vertices[v] = {
+            QPointF(x, this->height() - y),
+            CYAN
+        };
+    }
+}
+
+void DrawableComparabilityBigraph::embed() {
+    const auto G2 = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
+    this->point_space_bound = {0, G2->getPointSpaceLimit()};
 
     for (auto& [v, pos] : G2->embedding()) {
         auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
@@ -92,6 +120,7 @@ void DrawableComparabilityGraph::embed() {
         };
     }
 }
+
 
 QPointF DrawableComparabilityGraph::normalize(QPointF coordinate) const {
     const double size = this->point_space_bound.second;
@@ -108,7 +137,20 @@ void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>
 
     for (const auto& [v, dv] : this->vertices) {
         const auto& p = dv.position;
-        if (G->isBipartite() and G->isInV1(v)) continue;
+        painter->drawLine(p + QPointF(-length, 0), p);
+        painter->drawLine(p + QPointF(0, length), p);
+    }
+    this->resetPainter(painter);
+}
+
+void DrawableComparabilityBigraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
+    const auto G2 = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
+    const float length = static_cast<float>(this->height()) * 0.1f;
+    painter->setPen(QPen(Qt::darkGray, 1, Qt::DashLine, Qt::RoundCap));
+
+    for (const auto& [v, dv] : this->vertices) {
+        const auto& p = dv.position;
+        if (G2->isInV1(v)) continue;
         painter->drawLine(p + QPointF(-length, 0), p);
         painter->drawLine(p + QPointF(0, length), p);
     }

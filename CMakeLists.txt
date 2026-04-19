@@ -8,6 +8,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address,undefined)
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(${PROJECT_NAME}

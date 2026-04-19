@@ -22,7 +22,35 @@ double BicliquePartitioner::findHyperplane(std::vector<EmbeddedVertex>& ordering
     return ordering[n].dimensions[dim];
 }
 
-double BicliquePartitioner::partition(const std::shared_ptr<ComparabilityGraph>& G) {
-    double median = findHyperplane(G->ordering, 1);
+double BicliquePartitioner::adjustHyperplane(std::vector<EmbeddedVertex>& ordering, double hyperplane) {
+    double minDistance = std::numeric_limits<double>::infinity();
+    double next = hyperplane;
+
+    for (const auto& vertex : ordering) {
+        if (const double dist = vertex.dimensions[1] - hyperplane; dist < minDistance and dist > 0) {
+            minDistance = dist;
+            next = vertex.dimensions[1];
+        }
+    }
+    return (hyperplane + next) / 2;
+}
+
+
+double BicliquePartitioner::partition(const std::shared_ptr<ComparabilityBigraph>& G, bool render) {
+    double median = findHyperplane(*G->ordering, 1);
+
+    std::vector<EmbeddedVertex> V1_prime;
+    std::vector<EmbeddedVertex> V2_prime;
+
+    std::ranges::copy_if(*G->ordering, std::back_inserter(V1_prime),
+                         [median, &G](const EmbeddedVertex& vertex) {
+                             return G->isInV1(vertex.v) && vertex.dimensions[1] <= median;
+                         });
+    std::ranges::copy_if(*G->ordering, std::back_inserter(V2_prime),
+                         [median, &G](const EmbeddedVertex& vertex) {
+                             return G->isInV2(vertex.v) && vertex.dimensions[1] > median;
+                         });
+
+    if (render) median = adjustHyperplane(*G->ordering, median);
     return median;
 }

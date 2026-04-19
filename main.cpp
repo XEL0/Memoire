@@ -22,10 +22,7 @@ int main(int argc, char *argv[]) {
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
-    unsigned V = 9;
-    //auto graph = std::make_shared<ComparabilityGraph>(V, 2, V * 100);
-    //auto graph = std::make_shared<ComparabilityGraph>(V, 2, V/2, V/2, V * 100);
-    auto graph = std::make_shared<ComparabilityGraph>(9, 2, 4, 5, 900);
+    auto graph = std::make_shared<ComparabilityBigraph>(5, 5, 2, 900);
     DrawableComparabilityGraph drawableGraph(&window);
     BicliquePartitioner partitioner = BicliquePartitioner();
     auto l = partitioner.partition(graph);

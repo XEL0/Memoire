@@ -16,8 +16,8 @@ void DrawableGraph::linkGraph(const std::shared_ptr<Graph>& G) {
 void DrawableGraph::embed() {
     const unsigned h = this->height();
     const unsigned pad = static_cast<unsigned>(padding_ratio) * h;
-
     RandomGenerator rand(pad , h - pad);
+
     for (const auto v : G->vertices()) {
         this->vertices[v] = {
             QPointF(rand(), rand()),

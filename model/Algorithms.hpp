@@ -8,8 +8,8 @@ class Algorithms {
 
 class BicliquePartitioner : public Algorithms {
 protected:
-    double findHyperplane(std::vector<EmbeddedVertex>& ordering, unsigned dim);
-    double adjustHyperplane(std::vector<EmbeddedVertex>& ordering, double hyperplane);
+    double findHyperplane(std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>>& ordering, unsigned dim);
+    double adjustHyperplane(std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>>& ordering, double hyperplane);
 
 public:
     BicliquePartitioner();

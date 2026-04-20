@@ -22,17 +22,30 @@ int main(int argc, char *argv[]) {
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
-    auto graph = std::make_shared<ComparabilityBigraph>(5, 5, 2, 900);
+    /*auto graph = std::make_shared<Graph>();
+    graph->generate(4);
+    DrawableGraph drawableGraph(&window);*/
+
+    /*auto graph = std::make_shared<BipartiteGraph>();
+    graph->generate(4, 2);
+    DrawableBipartiteGraph drawableGraph(&window);*/
+
+    /*auto graph = std::make_shared<ComparabilityGraph>();
+    graph->generate(5, 2, 900);
+    DrawableComparabilityGraph drawableGraph(&window);*/
+
+    auto graph = std::make_shared<ComparabilityBigraph>();
+    graph->generate(5, 5, 2, 900);
     DrawableComparabilityBigraph drawableGraph(&window);
 
-    /*BicliquePartitioner partitioner = BicliquePartitioner();
+    BicliquePartitioner partitioner = BicliquePartitioner();
     auto l = partitioner.partition(graph);
     std::cout << l << std::endl;
     //double l = 100;*/
 
     drawableGraph.resize(size, size);
     drawableGraph.linkGraph(graph);
-    //drawableGraph.addLine(l);
+    drawableGraph.addLine(l);
 
     window.show();
 

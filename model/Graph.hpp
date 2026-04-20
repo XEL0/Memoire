@@ -20,6 +20,7 @@ using Edge = std::pair<Vertex, Vertex>;
 
 class Graph {
 protected:
+    unsigned V;
     std::unique_ptr<std::unordered_set<Vertex>> V1;
     std::unique_ptr<std::vector<Edge>> E;
 
@@ -102,10 +103,10 @@ protected:
     virtual void constructEdgesSet();
     virtual void constructV(unsigned p, unsigned q);
     [[nodiscard]] virtual bool comparable(Vertex u, Vertex v) const;
-    Graph();
 public:
+    Graph();
     Graph(std::unique_ptr<std::unordered_set<Vertex>> V, std::unique_ptr<std::vector<Edge>> E);
-    Graph(unsigned V);
+    void generate(unsigned V);
     virtual ~Graph() = default;
 
     [[nodiscard]] virtual VertexRange vertices() const {
@@ -126,12 +127,13 @@ protected:
 
     void constructV(unsigned p, unsigned q) override;
     [[nodiscard]] bool comparable(Vertex u, Vertex v) const override;
-    BipartiteGraph();
+
 public:
+    BipartiteGraph();
     BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                    std::unique_ptr<std::unordered_set<Vertex>> V2,
                    std::unique_ptr<std::vector<Edge>> E);
-    BipartiteGraph(unsigned p, unsigned q);
+    void generate(unsigned p, unsigned q);
     ~BipartiteGraph() override = default;
 
     [[nodiscard]] bool isInV1(const Vertex v) const {
@@ -152,24 +154,24 @@ class ComparabilityGraph : virtual public Graph {
 protected:
     unsigned dim;
     unsigned point_space_limit;
-    std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> FA_ordering;
-    std::unique_ptr<std::vector<EmbeddedVertex>> ordering;
+    std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering;
 
     [[nodiscard]] bool comparable(Vertex u, Vertex v) const override;
 
     void constructOrdering();
-    ComparabilityGraph();
+
 public:
+    ComparabilityGraph();
     ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>> V,
                        std::unique_ptr<std::vector<Edge>> E,
                        std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
                        unsigned dim,
                        unsigned point_space_limit);
-    ComparabilityGraph(unsigned V, unsigned dim, unsigned point_space_limit);
+    void generate(unsigned V, unsigned dim, unsigned point_space_limit);
     ~ComparabilityGraph() override = default;
 
     [[nodiscard]] auto embedding() const {
-        return std::views::all(*FA_ordering);
+        return std::views::all(*ordering);
     }
 
     [[nodiscard]] virtual unsigned getPointSpaceLimit() const { return point_space_limit; }
@@ -178,9 +180,10 @@ public:
 class ComparabilityBigraph : virtual public BipartiteGraph, virtual public ComparabilityGraph {
 protected:
     [[nodiscard]] bool comparable(Vertex u, Vertex v) const override;
-    ComparabilityBigraph();
+
 
 public:
+    ComparabilityBigraph();
     ComparabilityBigraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                          std::unique_ptr<std::unordered_set<Vertex>> V2,
                          std::unique_ptr<std::vector<Edge>> E,
@@ -188,7 +191,7 @@ public:
                          unsigned dim,
                          unsigned point_space_limit);
 
-    ComparabilityBigraph(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
+    void generate(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
     ~ComparabilityBigraph() override = default;
 };
 

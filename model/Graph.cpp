@@ -1,29 +1,34 @@
 #include "Graph.hpp"
 
 #include <algorithm>
+#include <iostream>
+#include <ostream>
+
 #include "RandomGenerator.hpp"
 
-
-Graph::Graph(): V1(std::make_unique<std::unordered_set<Vertex>>()), E(std::make_unique<std::vector<Edge>>()) {}
+Graph::Graph(): V(0), V1(std::make_unique<std::unordered_set<Vertex>>()), E(std::make_unique<std::vector<Edge>>()) {
+}
 
 Graph::Graph(std::unique_ptr<std::unordered_set<Vertex>> V, std::unique_ptr<std::vector<Edge> > E) :
-    V1(std::move(V)), E(std::move(E)) {}
+    V(0), V1(std::move(V)), E(std::move(E)) {
+    this->V = V1->size();
+}
 
-Graph::Graph(const unsigned V): Graph() {
+void Graph::generate(const unsigned V){
     this->Graph::constructV(V, 0);
     this->Graph::constructEdgesSet();
 }
-
-
 
 BipartiteGraph::BipartiteGraph(): V2(std::make_unique<std::unordered_set<Vertex>>()) {}
 
 BipartiteGraph::BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex> > V1,
                                std::unique_ptr<std::unordered_set<Vertex> > V2,
                                std::unique_ptr<std::vector<Edge> > E) :
-    Graph(std::move(V1), std::move(E)), V2(std::move(V2)){}
+    Graph(std::move(V1), std::move(E)), V2(std::move(V2)) {
+    this->V = V1->size() + V2->size();
+}
 
-BipartiteGraph::BipartiteGraph(const unsigned p, const unsigned q) : BipartiteGraph() {
+void BipartiteGraph::generate(const unsigned p, const unsigned q){
     this->BipartiteGraph::constructV(p, q);
     this->BipartiteGraph::constructEdgesSet();
 }
@@ -33,7 +38,7 @@ BipartiteGraph::BipartiteGraph(const unsigned p, const unsigned q) : BipartiteGr
 ComparabilityGraph::ComparabilityGraph() :
     dim{},
     point_space_limit{},
-    FA_ordering(std::make_unique<std::unordered_map<Vertex, std::vector<unsigned>>>())
+    ordering(std::make_unique<std::unordered_map<Vertex, std::vector<unsigned>>>())
     {}
 
 ComparabilityGraph::ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>> V,
@@ -44,19 +49,17 @@ ComparabilityGraph::ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex
     Graph(std::move(V), std::move(E)),
     dim(dim),
     point_space_limit(point_space_limit),
-    FA_ordering(std::move(ordering))
+    ordering(std::move(ordering))
     {}
 
 
-ComparabilityGraph::ComparabilityGraph(const unsigned V, const unsigned dim, const unsigned point_space_limit):
-    ComparabilityGraph()
-    {
-        this->dim = dim;
-        this->point_space_limit = point_space_limit;
-        this->Graph::constructV(V, 0);
-        constructOrdering();
-        this->Graph::constructEdgesSet();
-    }
+void ComparabilityGraph::generate(const unsigned V, const unsigned dim, const unsigned point_space_limit){
+    this->dim = dim;
+    this->point_space_limit = point_space_limit;
+    this->Graph::constructV(V, 0);
+    constructOrdering();
+    this->Graph::constructEdgesSet();
+}
 
 
 
@@ -81,10 +84,12 @@ ComparabilityBigraph::ComparabilityBigraph(std::unique_ptr<std::unordered_set<Ve
 }
 
 
-ComparabilityBigraph::ComparabilityBigraph(const unsigned p, const unsigned q,
-                                           const unsigned dim, const unsigned point_space_limit):
-    BipartiteGraph(p, q), ComparabilityGraph(p + q, dim, point_space_limit) {
-
+void ComparabilityBigraph::generate(const unsigned p, const unsigned q, const unsigned dim, const unsigned point_space_limit){
+    this->dim = dim;
+    this->point_space_limit = point_space_limit;
+    this->BipartiteGraph::constructV(p, q);
+    this->constructOrdering();
+    this->ComparabilityBigraph::constructEdgesSet();
 }
 
 
@@ -95,11 +100,12 @@ ComparabilityBigraph::ComparabilityBigraph(const unsigned p, const unsigned q,
 
 
 void Graph::constructV(const unsigned p, const unsigned q) {
+    this->V = p + q;
     for (unsigned i = 0; i < p; i++) V1->insert(i);
 }
 
 void BipartiteGraph::constructV(const unsigned p, const unsigned q) {
-    const unsigned V = p + q;
+    this->V = p + q;
     auto rg = RandomGenerator(0, V);
     std::vector<Vertex> vertices(V);
     std::iota(vertices.begin(), vertices.end(), 0);
@@ -113,7 +119,9 @@ void BipartiteGraph::constructV(const unsigned p, const unsigned q) {
 
 void Graph::constructEdgesSet() {
     const std::unique_ptr<std::vector<Edge>> all_possible_edges = constructAllPossibleEdges();
-    const auto edge_count = all_possible_edges->size();
+    E->insert(E->end(), all_possible_edges->begin(), all_possible_edges->end());
+    // if we don't want the graph to be complete
+    /*const auto edge_count = all_possible_edges->size();
     auto rg = RandomGenerator(0, edge_count);
     const auto wanted_edges = rg();
     std::ranges::shuffle(*all_possible_edges, rg.getRNG());
@@ -121,19 +129,24 @@ void Graph::constructEdgesSet() {
     E->insert(E->end(),
               all_possible_edges->begin(),
               all_possible_edges->begin() + wanted_edges);
+    for (auto e : edges()) {
+        std::cout << "(" << e.first << ", " << e.second << ")" << std::endl;
+    }*/
 }
 
 void ComparabilityGraph::constructOrdering() {
     auto rg = RandomGenerator(0, point_space_limit);
     for (const Vertex v : vertices()) {
-        FA_ordering->operator[](v) = {};
+        ordering->operator[](v) = {};
+        for (unsigned d = 0; d < dim; d++) {
+            ordering->at(v).push_back(rg());
+        }
     }
     embedded = true;
 }
 
 
 std::unique_ptr<std::vector<Edge>> Graph::constructAllPossibleEdges() {
-    const size_t V = V1->size();
     std::vector<Edge> all_possible_edges;
     all_possible_edges.reserve(V * (V - 1) / 2);
 
@@ -157,11 +170,11 @@ bool BipartiteGraph::comparable(const Vertex u, const Vertex v) const {
 
 bool ComparabilityGraph::comparable(const Vertex u, const Vertex v) const {
     const bool smaller = std::ranges::all_of(
-                std::views::zip(FA_ordering->at(u), FA_ordering->at(v)),
+                std::views::zip(ordering->at(u), ordering->at(v)),
                 [](auto pair) { auto [a, b] = pair; return a < b; });
 
     const bool greater = std::ranges::all_of(
-        std::views::zip(FA_ordering->at(u), FA_ordering->at(v)),
+        std::views::zip(ordering->at(u), ordering->at(v)),
         [](auto pair) { auto [a, b] = pair; return a > b; });
 
     return smaller or greater;
@@ -173,11 +186,11 @@ bool ComparabilityBigraph::comparable(const Vertex u, const Vertex v) const {
     bool smaller;
     if (isInV1(u)) {
         smaller = std::ranges::all_of(
-                        std::views::zip(FA_ordering->at(u), FA_ordering->at(v)),
+                        std::views::zip(ordering->at(u), ordering->at(v)),
                         [](auto pair) { auto [a, b] = pair; return a < b; });
     } else {
         smaller = std::ranges::all_of(
-                std::views::zip(FA_ordering->at(u), FA_ordering->at(v)),
+                std::views::zip(ordering->at(u), ordering->at(v)),
                 [](auto pair) { auto [a, b] = pair; return a > b; });
     }
     return smaller;

@@ -1,37 +1,40 @@
 #include "Graph.hpp"
 
 #include <algorithm>
-#include <cassert>
-
 #include "RandomGenerator.hpp"
+
+
+Graph::Graph(): V1(std::make_unique<std::unordered_set<Vertex>>()), E(std::make_unique<std::vector<Edge>>()) {}
 
 Graph::Graph(std::unique_ptr<std::unordered_set<Vertex>> V, std::unique_ptr<std::vector<Edge> > E) :
     V1(std::move(V)), E(std::move(E)) {}
 
-
-Graph::Graph(const unsigned V)
-    : V1(std::make_unique<std::unordered_set<Vertex>>()),
-      E(std::make_unique<std::vector<Edge>>()) {
+Graph::Graph(const unsigned V): Graph() {
     this->Graph::constructV(V, 0);
     this->Graph::constructEdgesSet();
 }
 
+
+
+BipartiteGraph::BipartiteGraph(): V2(std::make_unique<std::unordered_set<Vertex>>()) {}
 
 BipartiteGraph::BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex> > V1,
                                std::unique_ptr<std::unordered_set<Vertex> > V2,
                                std::unique_ptr<std::vector<Edge> > E) :
     Graph(std::move(V1), std::move(E)), V2(std::move(V2)){}
 
-
-BipartiteGraph::BipartiteGraph(unsigned p, unsigned q)
-    : Graph(),
-      V2(std::make_unique<std::unordered_set<Vertex>>()) {
-    V1 = std::make_unique<std::unordered_set<Vertex>>();
-    E = std::make_unique<std::vector<Edge>>();
+BipartiteGraph::BipartiteGraph(const unsigned p, const unsigned q) : BipartiteGraph() {
     this->BipartiteGraph::constructV(p, q);
     this->BipartiteGraph::constructEdgesSet();
 }
 
+
+
+ComparabilityGraph::ComparabilityGraph() :
+    dim{},
+    point_space_limit{},
+    FA_ordering(std::make_unique<std::unordered_map<Vertex, std::vector<unsigned>>>())
+    {}
 
 ComparabilityGraph::ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>> V,
                                        std::unique_ptr<std::vector<Edge>> E,
@@ -39,43 +42,57 @@ ComparabilityGraph::ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex
                                        const unsigned dim,
                                        const unsigned point_space_limit) :
     Graph(std::move(V), std::move(E)),
-    point_space_limit(point_space_limit),
     dim(dim),
-    FA_ordering(std::move(ordering)) {}
+    point_space_limit(point_space_limit),
+    FA_ordering(std::move(ordering))
+    {}
 
 
-ComparabilityGraph::ComparabilityGraph(unsigned V, unsigned dim, unsigned point_space_limit)
-    : Graph(),
-      dim(dim),
-      point_space_limit(point_space_limit),
-      FA_ordering(std::make_unique<std::unordered_map<Vertex, std::vector<unsigned>>>()),
-      ordering(std::make_unique<std::vector<EmbeddedVertex>>()) {
-    V1 = std::make_unique<std::unordered_set<Vertex>>();
-    E = std::make_unique<std::vector<Edge>>();
-    this->Graph::constructV(V, 0);
-    constructOrdering();
-    this->Graph::constructEdgesSet();
-}
+ComparabilityGraph::ComparabilityGraph(const unsigned V, const unsigned dim, const unsigned point_space_limit):
+    ComparabilityGraph()
+    {
+        this->dim = dim;
+        this->point_space_limit = point_space_limit;
+        this->Graph::constructV(V, 0);
+        constructOrdering();
+        this->Graph::constructEdgesSet();
+    }
 
+
+
+
+ComparabilityBigraph::ComparabilityBigraph(){}
 
 ComparabilityBigraph::ComparabilityBigraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                                            std::unique_ptr<std::unordered_set<Vertex>> V2,
                                            std::unique_ptr<std::vector<Edge>> E,
                                            std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
                                            const unsigned dim,
-                                           const unsigned point_space_limit)
-    : Graph(std::move(V1), std::move(E)),
-      BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex>>{}, std::move(V2), std::unique_ptr<std::vector<Edge>>{}),
-      ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>>{}, std::unique_ptr<std::vector<Edge>>{}, std::move(ordering), dim, point_space_limit)
+                                           const unsigned point_space_limit):
+    BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex>>{},
+                  std::move(V2), std::unique_ptr<std::vector<Edge>>{}),
+    Graph(std::move(V1), std::move(E)),
+    ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>>{},
+                       std::unique_ptr<std::vector<Edge>>{},
+                       std::move(ordering), dim, point_space_limit)
 {
     bipartite = true;
     embedded = true;
 }
 
 
-ComparabilityBigraph::ComparabilityBigraph(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit): Graph(), BipartiteGraph(p, q), ComparabilityGraph(p + q, dim, point_space_limit) {
+ComparabilityBigraph::ComparabilityBigraph(const unsigned p, const unsigned q,
+                                           const unsigned dim, const unsigned point_space_limit):
+    BipartiteGraph(p, q), ComparabilityGraph(p + q, dim, point_space_limit) {
 
 }
+
+
+
+
+
+
+
 
 void Graph::constructV(const unsigned p, const unsigned q) {
     for (unsigned i = 0; i < p; i++) V1->insert(i);
@@ -108,26 +125,12 @@ void Graph::constructEdgesSet() {
 
 void ComparabilityGraph::constructOrdering() {
     auto rg = RandomGenerator(0, point_space_limit);
-    auto all = V();
-    for (const Vertex v : *all) {
+    for (const Vertex v : vertices()) {
         FA_ordering->operator[](v) = {};
-        ordering->push_back({v, {}});
     }
     embedded = true;
 }
 
-
-std::unique_ptr<std::unordered_set<Vertex>> Graph::V() const {
-    auto V = std::make_unique<std::unordered_set<Vertex>>();
-    V->insert(V1->begin(), V1->end());
-    return V;
-}
-
-std::unique_ptr<std::unordered_set<Vertex>> BipartiteGraph::V() const {
-    auto V = Graph::V();
-    V->insert(V2->begin(), V2->end());
-    return V;
-}
 
 std::unique_ptr<std::vector<Edge>> Graph::constructAllPossibleEdges() {
     const size_t V = V1->size();

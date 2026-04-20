@@ -23,15 +23,16 @@ int main(int argc, char *argv[]) {
     window.setPalette(palette);
 
     auto graph = std::make_shared<ComparabilityBigraph>(5, 5, 2, 900);
-    DrawableComparabilityGraph drawableGraph(&window);
-    BicliquePartitioner partitioner = BicliquePartitioner();
+    DrawableComparabilityBigraph drawableGraph(&window);
+
+    /*BicliquePartitioner partitioner = BicliquePartitioner();
     auto l = partitioner.partition(graph);
     std::cout << l << std::endl;
-    //double l = 100;
+    //double l = 100;*/
 
     drawableGraph.resize(size, size);
     drawableGraph.linkGraph(graph);
-    drawableGraph.addLine(l);
+    //drawableGraph.addLine(l);
 
     window.show();
 

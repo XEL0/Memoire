@@ -19,7 +19,7 @@ void DrawableGraph::embed() {
 
     RandomGenerator rand(pad , h - pad);
     for (const auto v : G->vertices()) {
-        this->vertices[*v] = {
+        this->vertices[v] = {
             QPointF(rand(), rand()),
             CYAN
         };
@@ -33,9 +33,9 @@ void DrawableBipartiteGraph::embed() {
 
     RandomGenerator rand(pad , h - pad);
     for (const auto v : G->vertices()) {
-        this->vertices[*v] = {
+        this->vertices[v] = {
             QPointF(rand(), rand()),
-            G2->isInV1(*v) ? CYAN : RED
+            G2->isInV1(v) ? CYAN : RED
         };
     }
 }

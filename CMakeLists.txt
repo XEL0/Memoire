@@ -19,8 +19,8 @@ add_executable(${PROJECT_NAME}
         model/Graph.hpp
         model/Graph.cpp
         model/randomGenerator.hpp
-        model/Algorithms.hpp
-        model/Algorithms.cpp
+        #model/Algorithms.hpp
+        #model/Algorithms.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

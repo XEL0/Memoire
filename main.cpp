@@ -35,13 +35,12 @@ int main(int argc, char *argv[]) {
     DrawableComparabilityGraph drawableGraph(&window);*/
 
     auto graph = std::make_shared<ComparabilityBigraph>();
-    graph->generate(5, 5, 2, 900);
+    graph->generate(3, 3, 2, 900);
     DrawableComparabilityBigraph drawableGraph(&window);
 
     BicliquePartitioner partitioner = BicliquePartitioner();
-    auto l = partitioner.partition(graph);
-    std::cout << l << std::endl;
-    //double l = 100;*/
+    auto p = partitioner.partition(graph, true);
+    double l = 100;
 
     drawableGraph.resize(size, size);
     drawableGraph.linkGraph(graph);

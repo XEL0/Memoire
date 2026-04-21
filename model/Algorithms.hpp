@@ -8,12 +8,12 @@ class Algorithms {
 
 class BicliquePartitioner : public Algorithms {
 protected:
-    double findHyperplane(std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>>& ordering, unsigned dim);
-    double adjustHyperplane(std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>>& ordering, double hyperplane);
+    double findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) const;
+    double adjustHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, double hyperplane) const;
 
 public:
-    BicliquePartitioner();
-    double partition(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true);
+    explicit BicliquePartitioner();
+    std::vector<std::shared_ptr<ComparabilityBigraph>> partition(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true) const;
 };
 
 

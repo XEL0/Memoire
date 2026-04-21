@@ -21,7 +21,6 @@ using Edge = std::pair<Vertex, Vertex>;
 class Graph {
 protected:
     unsigned V;
-    std::unique_ptr<std::unordered_set<Vertex>> V1;
     std::unique_ptr<std::vector<Edge>> E;
 
     class VertexRange {
@@ -103,7 +102,9 @@ protected:
     virtual void constructEdgesSet();
     virtual void constructV(unsigned p, unsigned q);
     [[nodiscard]] virtual bool comparable(Vertex u, Vertex v) const;
+
 public:
+    std::unique_ptr<std::unordered_set<Vertex>> V1;
     Graph();
     Graph(std::unique_ptr<std::unordered_set<Vertex>> V, std::unique_ptr<std::vector<Edge>> E);
     void generate(unsigned V);
@@ -119,16 +120,17 @@ public:
 
     [[nodiscard]] virtual bool isEmbedded() const { return embedded; }
     [[nodiscard]] virtual bool isBipartite() const { return bipartite; }
+    [[nodiscard]] unsigned size() const;
 };
 
 class BipartiteGraph : virtual public Graph {
 protected:
-    std::unique_ptr<std::unordered_set<Vertex>> V2;
 
     void constructV(unsigned p, unsigned q) override;
     [[nodiscard]] bool comparable(Vertex u, Vertex v) const override;
 
 public:
+    std::unique_ptr<std::unordered_set<Vertex>> V2;
     BipartiteGraph();
     BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                    std::unique_ptr<std::unordered_set<Vertex>> V2,
@@ -147,6 +149,14 @@ public:
     [[nodiscard]] VertexRange vertices() const override {
         return VertexRange(V1.get(), V2.get());
     }
+
+    [[nodiscard]] auto enumerateV1() const {
+        return std::views::all(*V1);
+    }
+
+    [[nodiscard]] auto enumerateV2() const {
+        return std::views::all(*V2);
+    }
 };
 
 class ComparabilityGraph : virtual public Graph {
@@ -154,7 +164,7 @@ class ComparabilityGraph : virtual public Graph {
 protected:
     unsigned dim;
     unsigned point_space_limit;
-    std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering;
+    std::shared_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering;
 
     [[nodiscard]] bool comparable(Vertex u, Vertex v) const override;
 
@@ -164,7 +174,7 @@ public:
     ComparabilityGraph();
     ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>> V,
                        std::unique_ptr<std::vector<Edge>> E,
-                       std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
+                       const std::shared_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> &ordering,
                        unsigned dim,
                        unsigned point_space_limit);
     void generate(unsigned V, unsigned dim, unsigned point_space_limit);
@@ -187,7 +197,7 @@ public:
     ComparabilityBigraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                          std::unique_ptr<std::unordered_set<Vertex>> V2,
                          std::unique_ptr<std::vector<Edge>> E,
-                         std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
+                         const std::shared_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> &ordering,
                          unsigned dim,
                          unsigned point_space_limit);
 

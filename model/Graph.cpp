@@ -25,7 +25,7 @@ BipartiteGraph::BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex> > V1,
                                std::unique_ptr<std::unordered_set<Vertex> > V2,
                                std::unique_ptr<std::vector<Edge> > E) :
     Graph(std::move(V1), std::move(E)), V2(std::move(V2)) {
-    this->V = V1->size() + V2->size();
+    this->V = this->V1->size() + this->V2->size();
 }
 
 void BipartiteGraph::generate(const unsigned p, const unsigned q){
@@ -38,18 +38,18 @@ void BipartiteGraph::generate(const unsigned p, const unsigned q){
 ComparabilityGraph::ComparabilityGraph() :
     dim{},
     point_space_limit{},
-    ordering(std::make_unique<std::unordered_map<Vertex, std::vector<unsigned>>>())
+    ordering(std::make_shared<std::unordered_map<Vertex, std::vector<unsigned>>>())
     {}
 
 ComparabilityGraph::ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>> V,
                                        std::unique_ptr<std::vector<Edge>> E,
-                                       std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
+                                       const std::shared_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> &ordering,
                                        const unsigned dim,
                                        const unsigned point_space_limit) :
     Graph(std::move(V), std::move(E)),
     dim(dim),
     point_space_limit(point_space_limit),
-    ordering(std::move(ordering))
+    ordering(ordering)
     {}
 
 
@@ -64,12 +64,12 @@ void ComparabilityGraph::generate(const unsigned V, const unsigned dim, const un
 
 
 
-ComparabilityBigraph::ComparabilityBigraph(){}
+ComparabilityBigraph::ComparabilityBigraph()= default;
 
 ComparabilityBigraph::ComparabilityBigraph(std::unique_ptr<std::unordered_set<Vertex>> V1,
                                            std::unique_ptr<std::unordered_set<Vertex>> V2,
                                            std::unique_ptr<std::vector<Edge>> E,
-                                           std::unique_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> ordering,
+                                           const std::shared_ptr<std::unordered_map<Vertex, std::vector<unsigned>>> &ordering,
                                            const unsigned dim,
                                            const unsigned point_space_limit):
     BipartiteGraph(std::unique_ptr<std::unordered_set<Vertex>>{},
@@ -77,7 +77,7 @@ ComparabilityBigraph::ComparabilityBigraph(std::unique_ptr<std::unordered_set<Ve
     Graph(std::move(V1), std::move(E)),
     ComparabilityGraph(std::unique_ptr<std::unordered_set<Vertex>>{},
                        std::unique_ptr<std::vector<Edge>>{},
-                       std::move(ordering), dim, point_space_limit)
+                       ordering, dim, point_space_limit)
 {
     bipartite = true;
     embedded = true;
@@ -194,4 +194,8 @@ bool ComparabilityBigraph::comparable(const Vertex u, const Vertex v) const {
                 [](auto pair) { auto [a, b] = pair; return a > b; });
     }
     return smaller;
+}
+
+unsigned Graph::size() const {
+    return V;
 }

@@ -16,59 +16,34 @@ struct DrawableVertex {
     QColor color;
 };
 
-class DrawableGraph : public QWidget {
+class DrawableComparabilityBigraph : public QWidget {
     Q_OBJECT
 
 protected:
     float padding_ratio = 0.05f;
-    std::shared_ptr<Graph> G;
+    std::shared_ptr<ComparabilityBigraph> G;
     std::unordered_map<Vertex, DrawableVertex> vertices;
     double line = 0;
+    std::pair<unsigned, unsigned> point_space_bound;
 
+    [[nodiscard]] QPointF normalize(QPointF coordinate) const;
     virtual void embed();
     virtual std::unique_ptr<QPainter> initializePainter();
     void resetPainter(const std::unique_ptr<QPainter>& painter) const;
     virtual void drawEdges(const std::unique_ptr<QPainter>& painter) const;
     virtual void drawVertices(const std::unique_ptr<QPainter>& painter) const;
+    virtual void drawComparisons(const std::unique_ptr<QPainter>& painter) const;
 
     virtual void backgroundPaint(const std::unique_ptr<QPainter>& painter);
     virtual void foregroundPaint(const std::unique_ptr<QPainter>& painter);
     void paintEvent(QPaintEvent* event) override;
 
 public:
-    explicit DrawableGraph(QWidget *parent = nullptr);
+    explicit DrawableComparabilityBigraph(QWidget *parent = nullptr);
 
-    virtual void linkGraph(const std::shared_ptr<Graph>& G);
+    virtual void linkGraph(const std::shared_ptr<ComparabilityBigraph>& G);
     virtual void addLine(double h){ line = h;};
 };
 
-
-class DrawableBipartiteGraph : public DrawableGraph {
-protected:
-    void embed() override;
-public:
-    using DrawableGraph::DrawableGraph;
-};
-
-class DrawableComparabilityGraph : public DrawableGraph {
-protected:
-    std::pair<unsigned, unsigned> point_space_bound;
-
-    [[nodiscard]] QPointF normalize(QPointF coordinate) const;
-    void embed() override;
-    virtual void drawComparisons(const std::unique_ptr<QPainter>& painter) const;
-    void backgroundPaint(const std::unique_ptr<QPainter>& painter) override;
-    void foregroundPaint(const std::unique_ptr<QPainter>& painter) override;
-public:
-    using DrawableGraph::DrawableGraph;
-};
-
-class DrawableComparabilityBigraph : public DrawableComparabilityGraph {
-protected:
-    void embed() override;
-    void drawComparisons(const std::unique_ptr<QPainter>& painter) const override;
-public:
-    using DrawableComparabilityGraph::DrawableComparabilityGraph;
-};
 
 #endif //MEMOIRE_DRAWABLEGRAPH_HPP

@@ -6,43 +6,14 @@
 #include <QPainter>
 #include <QtCore/qcoreapplication.h>
 
-DrawableGraph::DrawableGraph(QWidget *parent): QWidget(parent) {}
+DrawableComparabilityBigraph::DrawableComparabilityBigraph(QWidget *parent): QWidget(parent) {}
 
-void DrawableGraph::linkGraph(const std::shared_ptr<Graph>& G) {
+void DrawableComparabilityBigraph::linkGraph(const std::shared_ptr<ComparabilityBigraph>& G) {
     this->G = G;
     this->embed();
 }
 
-void DrawableGraph::embed() {
-    const unsigned h = this->height();
-    const unsigned pad = static_cast<unsigned>(padding_ratio) * h;
-    RandomGenerator rand(pad , h - pad);
-
-    for (const auto v : G->vertices()) {
-        this->vertices[v] = {
-            QPointF(rand(), rand()),
-            CYAN
-        };
-    }
-}
-
-void DrawableBipartiteGraph::embed() {
-    const auto G2 = std::dynamic_pointer_cast<BipartiteGraph>(G);
-    const unsigned h = this->height();
-    const unsigned pad = static_cast<unsigned>(padding_ratio) * h;
-
-    RandomGenerator rand(pad , h - pad);
-    for (const auto v : G->vertices()) {
-        this->vertices[v] = {
-            QPointF(rand(), rand()),
-            G2->isInV1(v) ? CYAN : RED
-        };
-    }
-}
-
-void DrawableGraph::backgroundPaint(const std::unique_ptr<QPainter>&) {}
-void DrawableGraph::foregroundPaint(const std::unique_ptr<QPainter>&) {}
-void DrawableGraph::paintEvent(QPaintEvent*) {
+void DrawableComparabilityBigraph::paintEvent(QPaintEvent*) {
     const auto painter = initializePainter();
     this->backgroundPaint(painter);
     this->drawEdges(painter);
@@ -50,18 +21,18 @@ void DrawableGraph::paintEvent(QPaintEvent*) {
     this->foregroundPaint(painter);
 }
 
-std::unique_ptr<QPainter> DrawableGraph::initializePainter() {
+std::unique_ptr<QPainter> DrawableComparabilityBigraph::initializePainter() {
     auto painter = std::make_unique<QPainter>(this);
     this->resetPainter(painter);
     return painter;
 }
 
-void DrawableGraph::resetPainter(const std::unique_ptr<QPainter> &painter) const {
+void DrawableComparabilityBigraph::resetPainter(const std::unique_ptr<QPainter> &painter) const {
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(QPen(Qt::black, this->height() * 1./900));
 }
 
-void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
+void DrawableComparabilityBigraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
     for (const auto& [u, v] : G->edges()) {
         const auto [position_u, color_u] = this->vertices.at(u);
         const auto [position_v, color_v] = this->vertices.at(v);
@@ -69,7 +40,7 @@ void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
     }
 }
 
-void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const {
+void DrawableComparabilityBigraph::drawVertices(const std::unique_ptr<QPainter>& painter) const {
     const float radius = static_cast<float>(this->height()) * 0.02f;
     const float writing_size = static_cast<float>(this->height()) * 1.5f/900;
 
@@ -95,52 +66,29 @@ void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const
 
 
 
-void DrawableComparabilityGraph::embed() {
-    const auto G2 = std::dynamic_pointer_cast<ComparabilityGraph>(G);
-    this->point_space_bound = {0, G2->getPointSpaceLimit()};
 
-    for (auto& [v, pos] : G2->embedding()) {
-        auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
-        this->vertices[v] = {
-            QPointF(x, this->height() - y),
-            CYAN
-        };
-    }
-}
 
 void DrawableComparabilityBigraph::embed() {
-    const auto G2 = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
-    this->point_space_bound = {0, G2->getPointSpaceLimit()};
+    this->point_space_bound = {0, G->getPointSpaceLimit()};
 
-    for (auto& [v, pos] : G2->embedding()) {
+    for (auto& v : G->vertices()) {
+        auto pos = G->getEmbedding(v);
         auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
         this->vertices[v] = {
             QPointF(x, this->height() - y),
-            G2->isInV1(v) ? CYAN : RED
+            G->isInV1(v) ? CYAN : RED
         };
     }
 }
 
 
-QPointF DrawableComparabilityGraph::normalize(QPointF coordinate) const {
+QPointF DrawableComparabilityBigraph::normalize(QPointF coordinate) const {
     const double size = this->point_space_bound.second;
     const double h = this->height();
     const double pad = padding_ratio * h;
 
     return {pad + (coordinate.x() / size) * (h - 2.0 * pad),
                pad + (coordinate.y() / size) * (h - 2.0 * pad)};
-}
-
-void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
-    const float length = static_cast<float>(this->height()) * 0.1f;
-    painter->setPen(QPen(Qt::darkGray, 1, Qt::DashLine, Qt::RoundCap));
-
-    for (const auto& [v, dv] : this->vertices) {
-        const auto& p = dv.position;
-        painter->drawLine(p + QPointF(-length, 0), p);
-        painter->drawLine(p + QPointF(0, length), p);
-    }
-    this->resetPainter(painter);
 }
 
 void DrawableComparabilityBigraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
@@ -157,11 +105,11 @@ void DrawableComparabilityBigraph::drawComparisons(const std::unique_ptr<QPainte
     this->resetPainter(painter);
 }
 
-void DrawableComparabilityGraph::backgroundPaint(const std::unique_ptr<QPainter>& painter) {
+void DrawableComparabilityBigraph::backgroundPaint(const std::unique_ptr<QPainter>& painter) {
     this->drawComparisons(painter);
 }
 
-void DrawableComparabilityGraph::foregroundPaint(const std::unique_ptr<QPainter>& painter) {
+void DrawableComparabilityBigraph::foregroundPaint(const std::unique_ptr<QPainter>& painter) {
     auto [w, h] = normalize(QPointF(0, this->height() - line));
     painter->drawLine(QPointF(0, h), QPointF(this->width(), h));
 }

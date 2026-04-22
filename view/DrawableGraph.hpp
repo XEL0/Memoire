@@ -9,7 +9,7 @@
 inline auto GREEN = QColor(5, 203, 123);
 inline auto PURPLE = QColor(135, 82, 214);
 inline auto CYAN = QColor(62, 130, 182);
-inline auto RED = QColor(218, 54, 12);
+inline auto RED2 = QColor(218, 54, 12);
 
 struct DrawableVertex {
     QPointF position;
@@ -22,7 +22,7 @@ class DrawableComparabilityBigraph : public QWidget {
 protected:
     float padding_ratio = 0.05f;
     std::shared_ptr<ComparabilityBigraph> G;
-    std::unordered_map<Vertex, DrawableVertex> vertices;
+    std::unordered_map<unsigned, DrawableVertex> vertices;
     double line = 0;
     std::pair<unsigned, unsigned> point_space_bound;
 

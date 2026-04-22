@@ -14,6 +14,7 @@ protected:
 public:
     explicit BicliquePartitioner();
     std::vector<std::shared_ptr<ComparabilityBigraph>> partition(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true) const;
+    std::vector<std::shared_ptr<ComparabilityBigraph>> partitionBigger(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true) const;
 };
 
 

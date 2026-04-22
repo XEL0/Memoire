@@ -33,9 +33,10 @@ void DrawableComparabilityBigraph::resetPainter(const std::unique_ptr<QPainter> 
 }
 
 void DrawableComparabilityBigraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
-    for (const auto& [u, v] : G->edges()) {
-        const auto [position_u, color_u] = this->vertices.at(u);
-        const auto [position_v, color_v] = this->vertices.at(v);
+    auto edges = G->makeComplete();
+    for (const auto& [u, v] : *edges) {
+        const auto [position_u, color_u] = this->vertices.at(u->getId());
+        const auto [position_v, color_v] = this->vertices.at(v->getId());
         painter->drawLine(position_u, position_v);
     }
 }
@@ -71,12 +72,13 @@ void DrawableComparabilityBigraph::drawVertices(const std::unique_ptr<QPainter>&
 void DrawableComparabilityBigraph::embed() {
     this->point_space_bound = {0, G->getPointSpaceLimit()};
 
-    for (auto& v : G->vertices()) {
-        auto pos = G->getEmbedding(v);
-        auto [x, y] = normalize({static_cast<qreal>(pos[0]), static_cast<qreal>(pos[1])});
-        this->vertices[v] = {
+    for (auto& v : G->enumerate()) {
+        auto x_ = G->getEmbeddingAt(v, 0);
+        auto y_ = G->getEmbeddingAt(v, 1);
+        auto [x, y] = normalize({static_cast<qreal>(x_), static_cast<qreal>(y_)});
+        this->vertices[v->getId()] = {
             QPointF(x, this->height() - y),
-            G->isInV1(v) ? CYAN : RED
+            G->isInV1(v) ? CYAN : RED2
         };
     }
 }
@@ -92,13 +94,13 @@ QPointF DrawableComparabilityBigraph::normalize(QPointF coordinate) const {
 }
 
 void DrawableComparabilityBigraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
-    const auto G2 = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
     const float length = static_cast<float>(this->height()) * 0.1f;
     painter->setPen(QPen(Qt::darkGray, 1, Qt::DashLine, Qt::RoundCap));
 
-    for (const auto& [v, dv] : this->vertices) {
+    for (const auto& v : G->enumerate()) {
+        const auto& dv = this->vertices.at(v->getId());
         const auto& p = dv.position;
-        if (G2->isInV1(v)) continue;
+        if (G->isInV1(v)) continue;
         painter->drawLine(p + QPointF(-length, 0), p);
         painter->drawLine(p + QPointF(0, length), p);
     }

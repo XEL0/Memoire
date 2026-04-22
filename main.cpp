@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
-    /*std::vector<VertexPointer> V{
+    std::vector<VertexPointer> V{
         std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{100, 200}),
         std::make_shared<ColoredEmbeddedVertex>(2, 0, std::vector<unsigned>{200, 400}),
         std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{300, 300}),
@@ -32,9 +32,10 @@ int main(int argc, char *argv[]) {
         std::make_shared<ColoredEmbeddedVertex>(6, 1, std::vector<unsigned>{600, 600}),
         std::make_shared<ColoredEmbeddedVertex>(7, 1, std::vector<unsigned>{700, 700})
     };
+    auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 3 , 5, 2, 900);
 
-    auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 2, 900);*/
-    std::vector<VertexPointer> V{
+    //auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 2, 900);*/
+    /*std::vector<VertexPointer> V{
         std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),
         std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{457, 841}),
         std::make_shared<ColoredEmbeddedVertex>(6, 0, std::vector<unsigned>{379, 17}),
@@ -45,8 +46,8 @@ int main(int argc, char *argv[]) {
         std::make_shared<ColoredEmbeddedVertex>(0, 1, std::vector<unsigned>{896, 316}),
         std::make_shared<ColoredEmbeddedVertex>(4, 1, std::vector<unsigned>{196, 336}),
         std::make_shared<ColoredEmbeddedVertex>(9, 1, std::vector<unsigned>{831, 118}),
-    };
-    auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 2, 900);
+    };*/
+
     /*auto graph = std::make_shared<ComparabilityBigraph>();
     graph->generate(5, 5, 2, 900);
     std::cout << *graph << std::endl;
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]) {
 
     drawableGraph.resize(size, size);
     drawableGraph.linkGraph(graph);
-    drawableGraph.addLine(l);
+    //drawableGraph.addLine(l);
 
     window.show();
 

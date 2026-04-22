@@ -9,15 +9,15 @@ Graph::Graph() = default;
 Graph::Graph(std::vector<VertexPointer> vertices) : vertices(std::move(vertices)) {}
 
 Bigraph::Bigraph() = default;
-Bigraph::Bigraph(std::vector<VertexPointer> vertices): Graph(std::move(vertices)) {}
+Bigraph::Bigraph(std::vector<VertexPointer> vertices, const unsigned p, const unsigned q): Graph(std::move(vertices)), p(p), q(q) {}
 
 ComparabilityGraph::ComparabilityGraph(): dim(0), point_space_limit(1000) {}
 ComparabilityGraph::ComparabilityGraph(std::vector<VertexPointer> vertices, const unsigned dim, const unsigned point_space_limit):
     Graph(std::move(vertices)), dim(dim), point_space_limit(point_space_limit) {}
 
 ComparabilityBigraph::ComparabilityBigraph() = default;
-ComparabilityBigraph::ComparabilityBigraph(const std::vector<VertexPointer> &vertices, unsigned dim, unsigned point_space_limit)
-    : Graph(vertices), ComparabilityGraph(std::vector<VertexPointer>{}, dim, point_space_limit) {}
+ComparabilityBigraph::ComparabilityBigraph(const std::vector<VertexPointer> &vertices, const unsigned p, const unsigned q, unsigned dim, unsigned point_space_limit)
+    : Graph(vertices), Bigraph(std::vector<VertexPointer>{}, p, q), ComparabilityGraph(std::vector<VertexPointer>{}, dim, point_space_limit) {}
 
 
 void Graph::generate(const unsigned size) {
@@ -25,6 +25,8 @@ void Graph::generate(const unsigned size) {
 }
 
 void Bigraph::generate(unsigned p, unsigned q) {
+    this->p = p;
+    this->q = q;
     this->constructV(p, q);
 }
 
@@ -38,6 +40,8 @@ void ComparabilityGraph::generate(const unsigned size, const unsigned dim, const
 void ComparabilityBigraph::generate(const unsigned p, const unsigned q, const unsigned dim, const unsigned point_space_limit){
     this->dim = dim;
     this->point_space_limit = point_space_limit;
+    this->p = p;
+    this->q = q;
     this->constructV(p, q);
     this->constructOrdering();
 }
@@ -94,8 +98,8 @@ void ComparabilityGraph::constructOrdering() {
 
 std::unique_ptr<std::vector<Edge>> Graph::makeComplete() {
     std::vector<Edge> all_possible_edges;
-    const auto V = size();
-    all_possible_edges.reserve(V * (V - 1) / 2);
+    //const auto V = size();
+    //all_possible_edges.reserve(V * (V - 1) / 2);
 
     for (auto it = vertices.begin(); it != vertices.end(); ++it){
         for (auto jt = std::next(it); jt != vertices.end(); ++jt){
@@ -104,6 +108,15 @@ std::unique_ptr<std::vector<Edge>> Graph::makeComplete() {
         }
     }
     return std::make_unique<std::vector<Edge>>(std::move(all_possible_edges));
+}
+
+bool ComparabilityBigraph::isComplete() {
+    for (auto it = vertices.begin(); it != vertices.end(); ++it) {
+        for (auto jt = std::next(it); jt != vertices.end(); ++jt) {
+            if (Bigraph::comparable(*it,*jt) and not comparable(*it, *jt)) return false;
+        }
+    }
+    return true;
 }
 
 bool Bigraph::comparable(const VertexPointer &u, const VertexPointer &v) const {

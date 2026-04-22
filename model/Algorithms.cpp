@@ -31,134 +31,74 @@ double BicliquePartitioner::adjustHyperplane(const std::shared_ptr<Comparability
 }
 
 
-std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partition(const std::shared_ptr<ComparabilityBigraph>& G, const bool render) const {
+std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partition(
+    const std::shared_ptr<ComparabilityBigraph>& G,
+    const bool optimize_size,
+    const bool render) const {
+
+    if (optimize_size) {
+        if (areAllV1LessThanV2(G)) return {G};
+    }
 
     if (G->dim == 0) {
         return std::vector{G};
     }
     const double H = findHyperplane(G, G->dim-1);
-    std::cout << "G = " << *G << std::endl;
-    std::cout << "H = " << H << std::endl;
 
     auto V_under_H = std::vector<VertexPointer>{};
     auto V_over_H = std::vector<VertexPointer>{};
     auto V_prime = std::vector<VertexPointer>{};
 
-    bool V1_empty_under = true;
-    bool V2_empty_under = true;
-    bool V1_empty_over = true;
-    bool V2_empty_over = true;
+    unsigned nb_v1_under = 0;
+    unsigned nb_v2_under = 0;
+    unsigned nb_v1_over = 0;
+    unsigned nb_v2_over = 0;
 
     for (const auto& v : G->enumerate()) {
         if (G->getEmbeddingAt(v, G->dim-1) <= H) {
             V_under_H.push_back(v);
             if (G->isInV1(v)) {
-                V1_empty_under = false;
+                nb_v1_under++;
                 V_prime.push_back(v);
-            } else { V2_empty_under = false; }
+            } else {
+                nb_v2_under++;
+            }
 
         } else {
             V_over_H.push_back(v);
             if (G->isInV2(v)) {
-                V2_empty_over = false;
+                nb_v2_over++;
                 V_prime.push_back(v);
-            } else { V1_empty_over = false; }
+            } else {
+                nb_v1_over++;
+            }
         }
     }
 
     //if (render) H = adjustHyperplane(G, H);
 
-    if (V1_empty_under or V2_empty_over) return std::vector<std::shared_ptr<ComparabilityBigraph>>{};
+    if (not nb_v1_under or not nb_v2_over) return std::vector<std::shared_ptr<ComparabilityBigraph>>{};
 
     const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
-        std::move(V_prime), G->dim-1, G->getPointSpaceLimit());
-    auto res = partition(flattened_CG);
+        std::move(V_prime), nb_v1_under, nb_v2_over, G->dim-1, G->getPointSpaceLimit());
+    auto res = partition(flattened_CG, optimize_size, render);
 
-    if (not V2_empty_under) {
+    if (nb_v2_under) {
         const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
-            std::move(V_under_H), G->dim, G->getPointSpaceLimit());
-        const auto part2 = partition(under_H_CG);
+            std::move(V_under_H), nb_v1_under, nb_v2_under, G->dim, G->getPointSpaceLimit());
+        const auto part2 = partition(under_H_CG, optimize_size, render);
         res.insert(res.end(), part2.begin(), part2.end());
     }
 
-    if (not V1_empty_over) {
+    if (nb_v1_over) {
         const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
-            std::move(V_over_H), G->dim, G->getPointSpaceLimit());
-        const auto part3 = partition(over_H_CG);
+            std::move(V_over_H), nb_v1_over, nb_v2_over, G->dim, G->getPointSpaceLimit());
+        const auto part3 = partition(over_H_CG, optimize_size, render);
         res.insert(res.end(), part3.begin(), part3.end());
     }
     return res;
 }
 
-std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitionBigger(const std::shared_ptr<ComparabilityBigraph>& G, const bool render) const {
-    if (G->dim == 1) {
-        bool red = true;
-        auto V_final = std::vector<VertexPointer>{};
-        for (auto v : G->enumerate()) {
-            if ( not red or G->isInV1(v)) {
-                red = false;
-                V_final.push_back(v);
-            }
-        }
-        for (auto v : G->reverseEnumerate()) {
-            if (G->isInV1(v)) {
-                V_final.pop_back();
-                if (G->isInV2(V_final.back())) break;
-            }
-        }
-        auto G_new = std::make_shared<ComparabilityBigraph>(V_final, 0, G->getPointSpaceLimit());
-        return std::vector{G_new};
-    }
-    const double H = findHyperplane(G, G->dim-1);
-    std::cout << "G = " << *G << std::endl;
-    std::cout << "H = " << H << std::endl;
-
-    auto V_under_H = std::vector<VertexPointer>{};
-    auto V_over_H = std::vector<VertexPointer>{};
-    auto V_prime = std::vector<VertexPointer>{};
-
-    bool V1_empty_under = true;
-    bool V2_empty_under = true;
-    bool V1_empty_over = true;
-    bool V2_empty_over = true;
-
-    for (const auto& v : G->enumerate()) {
-        if (G->getEmbeddingAt(v, G->dim-1) <= H) {
-            V_under_H.push_back(v);
-            if (G->isInV1(v)) {
-                V1_empty_under = false;
-                V_prime.push_back(v);
-            } else { V2_empty_under = false; }
-
-        } else {
-            V_over_H.push_back(v);
-            if (G->isInV2(v)) {
-                V2_empty_over = false;
-                V_prime.push_back(v);
-            } else { V1_empty_over = false; }
-        }
-    }
-
-    //if (render) H = adjustHyperplane(G, H);
-
-    if (V1_empty_under or V2_empty_over) return std::vector<std::shared_ptr<ComparabilityBigraph>>{};
-
-    const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
-        std::move(V_prime), G->dim-1, G->getPointSpaceLimit());
-    auto res = partition(flattened_CG);
-
-    if (not V2_empty_under) {
-        const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
-            std::move(V_under_H), G->dim, G->getPointSpaceLimit());
-        const auto part2 = partition(under_H_CG);
-        res.insert(res.end(), part2.begin(), part2.end());
-    }
-
-    if (not V1_empty_over) {
-        const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
-            std::move(V_over_H), G->dim, G->getPointSpaceLimit());
-        const auto part3 = partition(over_H_CG);
-        res.insert(res.end(), part3.begin(), part3.end());
-    }
-    return res;
+bool BicliquePartitioner::areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph>& G) const {
+    return G->isComplete();
 }

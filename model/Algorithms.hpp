@@ -8,13 +8,14 @@ class Algorithms {
 
 class BicliquePartitioner : public Algorithms {
 protected:
-    double findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) const;
-    double adjustHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, double hyperplane) const;
+    [[nodiscard]] double findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) const;
+    [[nodiscard]] double adjustHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, double hyperplane) const;
+    [[nodiscard]] bool areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph> &G) const;
 
 public:
     explicit BicliquePartitioner();
-    std::vector<std::shared_ptr<ComparabilityBigraph>> partition(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true) const;
-    std::vector<std::shared_ptr<ComparabilityBigraph>> partitionBigger(const std::shared_ptr<ComparabilityBigraph>& G, bool render=true) const;
+    [[nodiscard]] std::vector<std::shared_ptr<ComparabilityBigraph>> partition(const std::shared_ptr<ComparabilityBigraph>& G, bool optimize_size, bool render=true) const;
+
 };
 
 

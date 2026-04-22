@@ -100,9 +100,11 @@ class Bigraph : virtual public Graph {
 protected:
     [[nodiscard]] bool comparable(const VertexPointer &u, const VertexPointer &v) const override;
     virtual void constructV(unsigned p, unsigned q);
+    unsigned p{};
+    unsigned q{};
 public:
     Bigraph();
-    explicit Bigraph(std::vector<VertexPointer> vertices);
+    explicit Bigraph(std::vector<VertexPointer> vertices, unsigned p, unsigned q);
     ~Bigraph() override = default;
     void generate(unsigned p, unsigned q);
     [[nodiscard]] bool isInV1(const VertexPointer& v) const { return dynamic_cast<ColoredVertex*>(v.get())->isInV1(); }
@@ -140,9 +142,10 @@ protected:
     void constructV(unsigned p, unsigned q) override;
 public:
     ComparabilityBigraph();
-    explicit ComparabilityBigraph(const std::vector<VertexPointer> &vertices, unsigned dim, unsigned point_space_limit);
+    explicit ComparabilityBigraph(const std::vector<VertexPointer> &vertices, unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
     ~ComparabilityBigraph() override = default;
     void generate(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
+    bool isComplete();
 };
 
 

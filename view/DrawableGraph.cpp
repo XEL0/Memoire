@@ -18,7 +18,7 @@ void DrawableComparabilityBigraph::paintEvent(QPaintEvent*) {
     this->backgroundPaint(painter);
     this->drawEdges(painter);
     this->drawVertices(painter);
-    this->foregroundPaint(painter);
+    //this->foregroundPaint(painter);
 }
 
 std::unique_ptr<QPainter> DrawableComparabilityBigraph::initializePainter() {

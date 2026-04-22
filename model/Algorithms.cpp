@@ -36,8 +36,12 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     const bool optimize_size,
     const bool render) const {
 
+    std::cout << *G << std::endl;
     if (optimize_size) {
-        if (areAllV1LessThanV2(G)) return {G};
+        if (areAllV1LessThanV2(G)) {
+            std::cout << "optimized" << std::endl;
+            return {G};
+        }
     }
 
     if (G->dim == 0) {

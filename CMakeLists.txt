@@ -14,15 +14,23 @@ add_link_options(-fsanitize=address,undefined)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(${PROJECT_NAME}
-        main.cpp
-        view/DrawableGraph.cpp
-        model/Graph.hpp
-        model/Graph.cpp
-        model/randomGenerator.hpp
-        model/Algorithms.hpp
-        model/Algorithms.cpp
+        src/main.cpp
+        src/view/DrawableGraph.cpp
+        src/model/Graph.hpp
+        src/model/Graph.cpp
+        src/model/randomGenerator.hpp
+        src/model/Algorithms.hpp
+        src/model/Algorithms.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE Qt6::Widgets
 )
+
+find_package(nlohmann_json 3.2.0 QUIET)
+
+if(NOT nlohmann_json_FOUND)
+    message(STATUS "nlohmann_json not found : use brew install nlohmann-json to download the library")
+endif()
+add_executable(my_app src/main.cpp)
+target_link_libraries(my_app PRIVATE nlohmann_json::nlohmann_json)

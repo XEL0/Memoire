@@ -21,7 +21,7 @@ double BicliquePartitioner::adjustHyperplane(const std::shared_ptr<Comparability
     double next = hyperplane;
 
     for (const auto& v : G->vertices) {
-        auto pos = G->getEmbeddingAt(v, G->dim - 1);
+        const auto pos = G->getEmbeddingAt(v, G->dim - 1);
         if (const double dist = pos - hyperplane; dist < minDistance and dist > 0) {
             minDistance = dist;
             next = pos;
@@ -36,6 +36,10 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     const bool optimize_size,
     const bool render) const {
 
+    if (G->size() <= 1) {
+        return {};
+    }
+
     std::cout << *G << std::endl;
     if (optimize_size) {
         if (areAllV1LessThanV2(G)) {
@@ -47,7 +51,8 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     if (G->dim == 0) {
         return std::vector{G};
     }
-    const double H = findHyperplane(G, G->dim-1);
+
+    double H = findHyperplane(G, G->dim-1);
 
     auto V_under_H = std::vector<VertexPointer>{};
     auto V_over_H = std::vector<VertexPointer>{};
@@ -79,13 +84,15 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
         }
     }
 
-    //if (render) H = adjustHyperplane(G, H);
+    if (render) H = adjustHyperplane(G, H);
+    std::cout << "H = " << H << std::endl;
+    auto res = std::vector<std::shared_ptr<ComparabilityBigraph>>{};
 
-    if (not nb_v1_under or not nb_v2_over) return std::vector<std::shared_ptr<ComparabilityBigraph>>{};
-
-    const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
-        std::move(V_prime), nb_v1_under, nb_v2_over, G->dim-1, G->getPointSpaceLimit());
-    auto res = partition(flattened_CG, optimize_size, render);
+    if (nb_v1_under and nb_v2_over) {
+        const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
+    std::move(V_prime), nb_v1_under, nb_v2_over, G->dim-1, G->getPointSpaceLimit());
+        res = partition(flattened_CG, optimize_size, render);
+    }
 
     if (nb_v2_under) {
         const auto under_H_CG = std::make_shared<ComparabilityBigraph>(

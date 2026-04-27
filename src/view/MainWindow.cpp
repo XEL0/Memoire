@@ -389,14 +389,30 @@ void MainWindow::onGenerateClicked() {
         const auto graph = std::make_shared<ComparabilityBigraph>();
         graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
 
-        auto *graphWindow = new GraphWindow(this, std::make_shared<DrawableComparabilityBigraph>());
+        /*std::vector<VertexPointer> V{
+            std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),
+            std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{457, 841}),
+            std::make_shared<ColoredEmbeddedVertex>(6, 0, std::vector<unsigned>{379, 17}),
+            std::make_shared<ColoredEmbeddedVertex>(5, 0, std::vector<unsigned>{95, 467}),
+            std::make_shared<ColoredEmbeddedVertex>(2, 0, std::vector<unsigned>{197, 530}),
+            std::make_shared<ColoredEmbeddedVertex>(7, 1, std::vector<unsigned>{3, 756}),
+            std::make_shared<ColoredEmbeddedVertex>(8, 1, std::vector<unsigned>{426, 705}),
+            std::make_shared<ColoredEmbeddedVertex>(0, 1, std::vector<unsigned>{896, 316}),
+            std::make_shared<ColoredEmbeddedVertex>(4, 1, std::vector<unsigned>{196, 336}),
+            std::make_shared<ColoredEmbeddedVertex>(9, 1, std::vector<unsigned>{831, 118}),
+        };
+        auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);*/
+
+        auto drawableGraph = std::make_shared<DrawableComparabilityBigraph>();
+        drawableGraph->resize(size, size);
+        drawableGraph->linkGraph(graph);
+
+        auto *graphWindow = new GraphWindow(this, drawableGraph);
         graphWindow->setAttribute(Qt::WA_DeleteOnClose);
         graphWindow->show();
         this->hide();
 
-        DrawableComparabilityBigraph drawableGraph(graphWindow);
-        drawableGraph.resize(size, size);
-        drawableGraph.linkGraph(graph);
+
     }
 
 }

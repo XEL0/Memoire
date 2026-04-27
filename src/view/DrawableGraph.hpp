@@ -28,6 +28,7 @@ protected:
 
     [[nodiscard]] QPointF normalize(QPointF coordinate) const;
     virtual void embed();
+    int minSize() const;
     virtual std::unique_ptr<QPainter> initializePainter();
     void resetPainter(const std::unique_ptr<QPainter>& painter) const;
     virtual void drawEdges(const std::unique_ptr<QPainter>& painter) const;

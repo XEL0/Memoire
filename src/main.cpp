@@ -4,9 +4,18 @@
 #include "model/Algorithms.hpp"
 #include "model/Graph.hpp"
 #include "view/DrawableGraph.hpp"
+#include "view/MainWindow.hpp"
 
 
 int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    MainWindow window;
+    window.show();
+
+    return app.exec();
+}
+/*
     QApplication app(argc, argv);
 
     unsigned width = 900;
@@ -22,7 +31,7 @@ int main(int argc, char *argv[]) {
     window.setAutoFillBackground(true);
     window.setPalette(palette);
 
-    /*std::vector<VertexPointer> V{
+    std::vector<VertexPointer> V{
         std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{100, 200}),
         std::make_shared<ColoredEmbeddedVertex>(2, 0, std::vector<unsigned>{200, 400}),
         std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{300, 300}),
@@ -32,7 +41,7 @@ int main(int argc, char *argv[]) {
         std::make_shared<ColoredEmbeddedVertex>(6, 1, std::vector<unsigned>{600, 600}),
         std::make_shared<ColoredEmbeddedVertex>(7, 1, std::vector<unsigned>{700, 700})
     };
-    auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 3 , 5, 2, 900);*/
+    auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 3 , 5, 2, 900);
 
 
     std::vector<VertexPointer> V{
@@ -49,16 +58,16 @@ int main(int argc, char *argv[]) {
     };
     auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);
 
-    /*auto graph = std::make_shared<ComparabilityBigraph>();
+    auto graph = std::make_shared<ComparabilityBigraph>();
     graph->generate(5, 5, 2, 900);
     std::cout << *graph << std::endl;
-    graph->makeComplete();*/
+    graph->makeComplete();
 
     DrawableComparabilityBigraph drawableGraph(&window);
 
-    /*auto graph = std::make_shared<ComparabilityBigraph>();
+    auto graph = std::make_shared<ComparabilityBigraph>();
     graph->generate(5, 5, 2, 900);
-    DrawableComparabilityBigraph drawableGraph(&window);*/
+    DrawableComparabilityBigraph drawableGraph(&window);
 
     BicliquePartitioner partitioner = BicliquePartitioner();
     auto p = partitioner.partition(graph, false);
@@ -75,4 +84,4 @@ int main(int argc, char *argv[]) {
     window.show();
 
     return app.exec();
-}
+}*/

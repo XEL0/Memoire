@@ -7,9 +7,13 @@
 #include <QScrollBar>
 
 #include "DrawableGraph.hpp"
+#include "../model/Algorithms.hpp"
 
 
-GraphWindow::GraphWindow(QMainWindow* creator, const std::shared_ptr<DrawableComparabilityBigraph>& graph): creator(creator), graph(graph) {
+GraphWindow::GraphWindow(
+    QMainWindow* creator,
+    const std::shared_ptr<DrawableComparabilityBigraph>& drawable,
+    const std::shared_ptr<ComparabilityBigraph>& graph): creator(creator), drawable(drawable), graph(graph) {
     setupUI();
 }
 
@@ -42,7 +46,7 @@ void GraphWindow::setupUI() {
     canvasWidget->setMinimumWidth(600);
 
     QVBoxLayout *canvasLayout = new QVBoxLayout(canvasWidget);
-    canvasLayout->addWidget(graph.get());
+    canvasLayout->addWidget(drawable.get());
     mainLayout->addWidget(canvasWidget, 3);
 
     QLabel *outputLabel = new QLabel("Output:");
@@ -195,7 +199,36 @@ void GraphWindow::clearOutput() {
 void GraphWindow::onComputeBicliqueCoverClicked() {
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
-
+    BicliquePartitioner partitioner = BicliquePartitioner();
+    auto p = partitioner.partition(graph, optimize);
+    appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
+    for (const auto& G: p) {
+        auto blue = std::vector<QString>();
+        auto red = std::vector<QString>();
+        for (const auto& v : G->enumerate()) {
+            if (G->isInV1(v)) {
+                blue.push_back(QString::number(v->getId()));
+            } else {
+                red.push_back(QString::number(v->getId()));
+            }
+        }
+        QString msg = "(<span style='color:blue;'>";
+        if (not blue.empty()) {
+            msg += blue[0];
+            for (size_t i = 1; i < blue.size(); ++i) {
+                msg += ", " + blue[i];
+            }
+        }
+        msg += "</span>)◀-▶(<span style='color:red;'>";
+        if (not red.empty()) {
+            msg += red[0];
+            for (size_t i = 1; i < red.size(); ++i) {
+                msg += ", " + red[i];
+            }
+        }
+        msg += "</span>)";
+        appendOutput(msg);
+    }
 }
 
 void GraphWindow::onOptimizeToggled(bool checked) {

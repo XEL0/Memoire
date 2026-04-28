@@ -20,7 +20,7 @@ class DrawableComparabilityBigraph : public QWidget {
     Q_OBJECT
 
 protected:
-    float padding_ratio = 0.05f;
+    float padding_ratio = 0.1f;
     std::shared_ptr<ComparabilityBigraph> G;
     std::unordered_map<unsigned, DrawableVertex> vertices;
     double line = 0;

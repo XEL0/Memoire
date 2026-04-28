@@ -12,7 +12,7 @@ class GraphWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableComparabilityBigraph>& graph);
+    GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableComparabilityBigraph>& drawable, const std::shared_ptr<ComparabilityBigraph>& graph);
     ~GraphWindow() override;
 
 
@@ -37,7 +37,8 @@ private:
     bool optimize;
 
     QMainWindow* creator;
-    std::shared_ptr<DrawableComparabilityBigraph> graph;
+    std::shared_ptr<DrawableComparabilityBigraph> drawable;
+    std::shared_ptr<ComparabilityBigraph> graph;
 };
 
 #endif // MEMOIRE_GRAPHWINDOW_HPP

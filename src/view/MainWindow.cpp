@@ -380,7 +380,7 @@ void MainWindow::onGenerateClicked() {
         int vertices = params["Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityGraph>();
-        graph->generate(vertices, dimensions, vertices * 100);
+        //graph->generate(vertices, dimensions, vertices * 100);
 
     } else if (graphType == "Bicomparability") {
         int blueVertices = params["Blue Vertices"].toInt();
@@ -407,7 +407,7 @@ void MainWindow::onGenerateClicked() {
         drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
-        auto *graphWindow = new GraphWindow(this, drawableGraph);
+        auto *graphWindow = new GraphWindow(this, drawableGraph, graph);
         graphWindow->setAttribute(Qt::WA_DeleteOnClose);
         graphWindow->show();
         this->hide();

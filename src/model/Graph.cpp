@@ -31,6 +31,7 @@ void Bigraph::generate(unsigned p, unsigned q) {
 }
 
 void ComparabilityGraph::generate(const unsigned size, const unsigned dim, const unsigned point_space_limit) {
+    //todo crash ?
     this->dim = dim;
     this->point_space_limit = point_space_limit;
     this->Graph::constructV(size);

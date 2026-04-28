@@ -224,5 +224,5 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
 }
 
 bool BicliquePartitioner::areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph>& G) const {
-    return G->isComplete();
+    return G->isComplete(); //todo NOT CORRECT
 }

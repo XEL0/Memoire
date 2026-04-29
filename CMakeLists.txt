@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
 add_link_options(-fsanitize=address,undefined)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
@@ -20,20 +20,22 @@ add_executable(${PROJECT_NAME}
         src/model/randomGenerator.hpp
         src/model/Algorithms.hpp
         src/model/Algorithms.cpp
+        src/view/widgets/DrawableGraph.hpp
         src/view/widgets/DrawableGraph.cpp
+        src/view/graphs/ComparabilityBigraphWindow.hpp
         src/view/graphs/ComparabilityBigraphWindow.cpp
+        src/view/MainWindow.hpp
         src/view/MainWindow.cpp
-        #src/view/StepsWindow.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE Qt6::Widgets
+        PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui
 )
 
 find_package(nlohmann_json 3.2.0 QUIET)
 
-if(NOT nlohmann_json_FOUND)
-    message(STATUS "nlohmann_json not found : use brew install nlohmann-json to download the library")
+if(nlohmann_json_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+else()
+    message(STATUS "nlohmann_json not found : use 'brew install nlohmann-json' to download the library")
 endif()
-add_executable(my_app src/main.cpp)
-target_link_libraries(my_app PRIVATE nlohmann_json::nlohmann_json)

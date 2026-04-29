@@ -365,25 +365,30 @@ void MainWindow::onGenerateClicked() {
         bool complete = params["Complete"].toBool();
 
         const auto graph = std::make_shared<Graph>();
-        //graph->generate(vertices, complete);
+        graph->generate(vertices);
+        graph->constructE(complete);
     } else if (graphType == "Bipartite") {
         int blueVertices = params["Blue Vertices"].toInt();
         int redVertices = params["Red Vertices"].toInt();
         bool complete = params["Complete"].toBool();
         const auto graph = std::make_shared<Bigraph>();
+        graph->generate(blueVertices, redVertices);
+        graph->constructE(complete);
 
     } else if (graphType == "Comparability") {
         int vertices = params["Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityGraph>();
-        //graph->generate(vertices, dimensions, vertices * 100);
+        graph->generate(vertices, dimensions, 1000);
+        graph->constructE(true);
 
     } else if (graphType == "Bicomparability") {
         int blueVertices = params["Blue Vertices"].toInt();
         int redVertices = params["Red Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityBigraph>();
-        graph->generate(blueVertices, redVertices, dimensions, 900);
+        graph->generate(blueVertices, redVertices, dimensions, 1000);
+        graph->constructE(true);
 
         /*std::vector<VertexPointer> V{
             std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),

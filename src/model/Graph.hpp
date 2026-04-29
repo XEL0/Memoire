@@ -25,6 +25,7 @@ public:
 
 };
 
+
 class ColoredVertex : public virtual Vertex {
 protected:
     unsigned color;
@@ -35,6 +36,7 @@ public:
     [[nodiscard]] bool isInV2() const { return color == 1;}
     [[nodiscard]] bool isComparableTo(const ColoredVertex &v) const{ return this->isInV1() xor v.isInV1(); }
 };
+
 
 class EmbeddedVertex : public virtual Vertex {
 protected:
@@ -60,8 +62,8 @@ public:
     }
     [[nodiscard]] bool isComparableTo(const EmbeddedVertex &v) const { return isSmallerTo(v) or isGreaterTo(v); }
     void embed(const unsigned dim, const unsigned value) { embedding[dim] = value;}
-
 };
+
 
 class ColoredEmbeddedVertex : public virtual ColoredVertex, public virtual EmbeddedVertex {
 public:
@@ -75,25 +77,37 @@ public:
 using VertexPointer = std::shared_ptr<Vertex>;
 using Edge = std::pair<VertexPointer, VertexPointer>;
 
+
+
+
+
+
+
+
 class Graph {
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
 protected:
     std::vector<VertexPointer> vertices;
+    std::vector<Edge> edges;
     [[nodiscard]] virtual bool comparable(const VertexPointer &u, const VertexPointer &v) const { return true; }
     virtual void constructV(unsigned size);
 
 public:
     Graph();
-    explicit Graph(std::vector<VertexPointer> vertices);
+    explicit Graph(std::vector<VertexPointer> vertices, std::vector<Edge> edges = {});
     virtual ~Graph() = default;
 
     [[nodiscard]] auto enumerate() const { return std::views::all(vertices); }
+    [[nodiscard]] auto enumerate_edges() const { return std::views::all(edges); }
     [[nodiscard]] auto reverseEnumerate() const { return std::views::reverse(vertices); }
     [[nodiscard]] unsigned size() const { return vertices.size(); }
 
     void generate(unsigned size);
-    std::unique_ptr<std::vector<Edge>> makeComplete();
+    [[nodiscard]] std::vector<Edge> makeComplete();
+    virtual void constructE(bool complete);
 };
+
+
 
 class Bigraph : virtual public Graph {
     friend std::ostream& operator<<(std::ostream& os, const Bigraph& g);
@@ -104,12 +118,14 @@ protected:
     unsigned q{};
 public:
     Bigraph();
-    explicit Bigraph(std::vector<VertexPointer> vertices, unsigned p, unsigned q);
+    explicit Bigraph(std::vector<VertexPointer> vertices, unsigned p, unsigned q, std::vector<Edge> edges = {});
     ~Bigraph() override = default;
     void generate(unsigned p, unsigned q);
     [[nodiscard]] bool isInV1(const VertexPointer& v) const { return dynamic_cast<ColoredVertex*>(v.get())->isInV1(); }
     [[nodiscard]] bool isInV2(const VertexPointer& v) const { return dynamic_cast<ColoredVertex*>(v.get())->isInV2(); }
 };
+
+
 
 class ComparabilityGraph : virtual public Graph {
     friend std::ostream& operator<<(std::ostream& os, const ComparabilityGraph& g);
@@ -124,15 +140,18 @@ protected:
     virtual void constructOrdering();
 public:
     ComparabilityGraph();
-    explicit ComparabilityGraph(std::vector<VertexPointer> vertices, unsigned dim, unsigned point_space_limit);
+    explicit ComparabilityGraph(std::vector<VertexPointer> vertices, unsigned dim, unsigned point_space_limit, std::vector<Edge> edges = {});
     ~ComparabilityGraph() override = default;
     void generate(unsigned size, unsigned dim, unsigned point_space_limit);
     [[nodiscard]] virtual unsigned getDimension() const { return dim; }
     [[nodiscard]] virtual unsigned getEmbeddingAt(const VertexPointer& v, const unsigned d) const {
     return dynamic_cast<EmbeddedVertex*>(v.get())->at(d);
-}
+    }
     [[nodiscard]] virtual unsigned getPointSpaceLimit() const { return point_space_limit; }
+    void constructE(bool complete) override { Graph::constructE(true); }
 };
+
+
 
 class ComparabilityBigraph : virtual public Bigraph, virtual public ComparabilityGraph {
     friend std::ostream& operator<<(std::ostream& os, const ComparabilityBigraph& g);
@@ -142,10 +161,11 @@ protected:
     void constructV(unsigned p, unsigned q) override;
 public:
     ComparabilityBigraph();
-    explicit ComparabilityBigraph(const std::vector<VertexPointer> &vertices, unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
+    explicit ComparabilityBigraph(std::vector<VertexPointer> vertices, unsigned p, unsigned q, unsigned dim, unsigned point_space_limit, std::vector<Edge> edges = {});
     ~ComparabilityBigraph() override = default;
     void generate(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
     bool isComplete();
+    using ComparabilityGraph::constructE;
 };
 
 

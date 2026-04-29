@@ -6,18 +6,24 @@
 #include "RandomGenerator.hpp"
 
 Graph::Graph() = default;
-Graph::Graph(std::vector<VertexPointer> vertices) : vertices(std::move(vertices)) {}
+Graph::Graph(std::vector<VertexPointer> vertices, std::vector<Edge> edges) : vertices(std::move(vertices)), edges(std::move(edges)) {}
 
 Bigraph::Bigraph() = default;
-Bigraph::Bigraph(std::vector<VertexPointer> vertices, const unsigned p, const unsigned q): Graph(std::move(vertices)), p(p), q(q) {}
+Bigraph::Bigraph(std::vector<VertexPointer> vertices, const unsigned p, const unsigned q, std::vector<Edge> edges):
+    Graph(std::move(vertices), std::move(edges)), p(p), q(q) {}
 
 ComparabilityGraph::ComparabilityGraph(): dim(0), point_space_limit(1000) {}
-ComparabilityGraph::ComparabilityGraph(std::vector<VertexPointer> vertices, const unsigned dim, const unsigned point_space_limit):
-    Graph(std::move(vertices)), dim(dim), point_space_limit(point_space_limit) {}
+ComparabilityGraph::ComparabilityGraph(
+    std::vector<VertexPointer> vertices, const unsigned dim, const unsigned point_space_limit, std::vector<Edge> edges):
+    Graph(std::move(vertices), std::move(edges)), dim(dim), point_space_limit(point_space_limit) {}
 
 ComparabilityBigraph::ComparabilityBigraph() = default;
-ComparabilityBigraph::ComparabilityBigraph(const std::vector<VertexPointer> &vertices, const unsigned p, const unsigned q, unsigned dim, unsigned point_space_limit)
-    : Graph(vertices), Bigraph(std::vector<VertexPointer>{}, p, q), ComparabilityGraph(std::vector<VertexPointer>{}, dim, point_space_limit) {}
+ComparabilityBigraph::ComparabilityBigraph(
+    std::vector<VertexPointer> vertices, const unsigned p, const unsigned q,
+    const unsigned dim, unsigned point_space_limit, std::vector<Edge> edges):
+        Bigraph(std::vector<VertexPointer>{}, p, q),
+        Graph(std::move(vertices), std::move(edges)),
+        ComparabilityGraph(std::vector<VertexPointer>{}, dim, point_space_limit) {}
 
 
 void Graph::generate(const unsigned size) {
@@ -31,10 +37,9 @@ void Bigraph::generate(unsigned p, unsigned q) {
 }
 
 void ComparabilityGraph::generate(const unsigned size, const unsigned dim, const unsigned point_space_limit) {
-    //todo crash ?
     this->dim = dim;
     this->point_space_limit = point_space_limit;
-    this->Graph::constructV(size);
+    this->constructV(size);
     constructOrdering();
 }
 
@@ -48,40 +53,41 @@ void ComparabilityBigraph::generate(const unsigned p, const unsigned q, const un
 }
 
 void Graph::constructV(const unsigned size) {
-    vertices.resize(size);
-    for (unsigned i = 0; i < size; i++) { vertices[i] = std::make_shared<Vertex>(i); }
+    vertices.reserve(size);
+    for (unsigned i = 0; i < size; i++) { vertices.push_back(std::make_shared<Vertex>(i)); }
 }
 
 void Bigraph::constructV(const unsigned p, const unsigned q) {
     const unsigned size = p + q;
-    vertices.resize(size);
+    vertices.reserve(size);
     auto rg = RandomGenerator(0, size);
     std::vector<unsigned> ids(size);
     std::iota(ids.begin(), ids.end(), 0);
     std::ranges::shuffle(ids, rg.getRNG());
     int i = 0;
     for (auto id : ids) {
-        i < p ? vertices[i] = std::make_shared<ColoredVertex>(id, 0) : vertices[i] = std::make_shared<ColoredVertex>(id, 1);
+        int color = (i < p) ? 0 : 1;
+        vertices.push_back(std::make_shared<ColoredVertex>(id, color));
         i++;
     }
 }
 
 void ComparabilityGraph::constructV(const unsigned size) {
-    vertices.resize(size);
-    for (unsigned i = 0; i < size; i++) { vertices[i] = std::make_shared<EmbeddedVertex>(i, std::vector<unsigned>(dim)); }
+    vertices.reserve(size);
+    for (unsigned i = 0; i < size; i++) { vertices.push_back(std::make_shared<EmbeddedVertex>(i, std::vector<unsigned>(dim))); }
 }
 
 void ComparabilityBigraph::constructV(const unsigned p, const unsigned q) {
     const unsigned size = p + q;
-    vertices.resize(size);
+    vertices.reserve(size);
     auto rg = RandomGenerator(0, size);
     std::vector<unsigned> ids(size);
     std::iota(ids.begin(), ids.end(), 0);
     std::ranges::shuffle(ids, rg.getRNG());
     int i = 0;
     for (auto id : ids) {
-        i < p ? vertices[i] = std::make_shared<ColoredEmbeddedVertex>(id, 0, std::vector<unsigned>(dim)):
-                vertices[i] = std::make_shared<ColoredEmbeddedVertex>(id, 1, std::vector<unsigned>(dim));
+        int color = (i < p) ? 0 : 1;
+        vertices.push_back(std::make_shared<ColoredEmbeddedVertex>(id, color, std::vector<unsigned>(dim)));
         i++;
     }
 }
@@ -97,7 +103,7 @@ void ComparabilityGraph::constructOrdering() {
     }
 }
 
-std::unique_ptr<std::vector<Edge>> Graph::makeComplete() {
+std::vector<Edge> Graph::makeComplete() {
     std::vector<Edge> all_possible_edges;
     //const auto V = size();
     //all_possible_edges.reserve(V * (V - 1) / 2);
@@ -108,7 +114,23 @@ std::unique_ptr<std::vector<Edge>> Graph::makeComplete() {
             all_possible_edges.emplace_back(*it, *jt);
         }
     }
-    return std::make_unique<std::vector<Edge>>(std::move(all_possible_edges));
+    return all_possible_edges;
+}
+
+void Graph::constructE(const bool complete) {
+    if (complete) {
+        for (const auto& e : makeComplete()) {
+            edges.emplace_back(e);
+        }
+    } else {
+        auto all = makeComplete();
+        auto rg = RandomGenerator(0, all.size());
+        std::ranges::shuffle(all, rg.getRNG());
+        const auto nb = rg();
+        for (unsigned i = 0; i < nb; i++) {
+            edges.emplace_back(all[i]);
+        }
+    }
 }
 
 bool ComparabilityBigraph::isComplete() {

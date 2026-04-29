@@ -109,7 +109,7 @@ public:
         std::shared_ptr<ComparabilityBigraph> G = std::make_shared<ComparabilityBigraph>(node->vertices, p, q, node->dim, 900);
         node->drawable = std::make_shared<DrawableComparabilityBigraph>();
         node->drawable->linkGraph(G);
-        node->drawable->addLine(node->H);
+        node->drawable->addLine(node->H, 1);
 
         if (jsonNode.contains("children") and jsonNode["children"].is_array()) {
             const auto &childrenArray = jsonNode["children"];

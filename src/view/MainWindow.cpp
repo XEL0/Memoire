@@ -369,7 +369,6 @@ void MainWindow::onGenerateClicked() {
         graph->constructE(complete);
 
         auto drawableGraph = std::make_shared<DrawableGraph>();
-        drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
         auto *graphWindow = new GraphWindow(this, drawableGraph, graph);
@@ -386,7 +385,6 @@ void MainWindow::onGenerateClicked() {
         graph->constructE(complete);
 
         auto drawableGraph = std::make_shared<DrawableBigraph>();
-        drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
         auto *graphWindow = new BigraphWindow(this, drawableGraph, graph);
@@ -402,7 +400,6 @@ void MainWindow::onGenerateClicked() {
         graph->constructE(true);
 
         auto drawableGraph = std::make_shared<DrawableComparabilityGraph>();
-        drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
         auto *graphWindow = new ComparabilityGraphWindow(this, drawableGraph, graph);
@@ -433,7 +430,6 @@ void MainWindow::onGenerateClicked() {
         auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);*/
 
         auto drawableGraph = std::make_shared<DrawableComparabilityBigraph>();
-        drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
         auto *graphWindow = new ComparabilityBigraphWindow(this, drawableGraph, graph);

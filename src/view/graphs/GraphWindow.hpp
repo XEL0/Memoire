@@ -35,8 +35,14 @@ protected:
     bool is_creator_displayed; //todo static and update on close, should be in another class
     QString title;
     QString window_title;
+    QGraphicsScene* graphicsScene = nullptr;
+    QGraphicsView* graphicsView = nullptr;
+    //std::unique_ptr<DrawableGraph> drawable;
     std::shared_ptr<DrawableGraph> drawable;
     std::shared_ptr<Graph> graph;
+
+    void resizeEvent(QResizeEvent* event) override;
+    void displayGraph(const std::shared_ptr<Graph>& graph);
 };
 
 

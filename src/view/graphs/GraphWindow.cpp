@@ -5,6 +5,8 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QScrollBar>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 
 #include "../widgets/DrawableGraph.hpp"
 #include "../StepsWindow.hpp"
@@ -52,6 +54,13 @@ BigraphWindow::~BigraphWindow() = default;
 ComparabilityGraphWindow::~ComparabilityGraphWindow() = default;
 ComparabilityBigraphWindow::~ComparabilityBigraphWindow() = default;
 
+void GraphWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    const QSize viewSize = graphicsView->viewport()->size();
+    drawable->setSceneDimensions(viewSize.width(), viewSize.height());
+    graphicsScene->setSceneRect(drawable->boundingRect());
+}
+
 void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
     auto* headerLayout = new QHBoxLayout();
     auto* canvasLabel = new QLabel(title);
@@ -78,7 +87,7 @@ void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
     headerLayout->addStretch();
     headerLayout->addWidget(mainWindowVisibilityManager);
     connect(mainWindowVisibilityManager, &QPushButton::clicked,
-        this, &ComparabilityBigraphWindow::onReShowMainWindow);
+        this, &GraphWindow::onReShowMainWindow);
 
     mainLayout->addLayout(headerLayout);
 
@@ -92,7 +101,19 @@ void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
     canvasWidget->setMinimumWidth(600);
 
     auto* canvasLayout = new QVBoxLayout(canvasWidget);
-    canvasLayout->addWidget(drawable.get());
+    canvasLayout->setContentsMargins(0, 0, 0, 0);
+
+    graphicsScene = new QGraphicsScene(this);
+    graphicsScene->setBackgroundBrush(QBrush(Qt::white));
+
+    graphicsView = new QGraphicsView(graphicsScene, this);
+    graphicsView->setRenderHint(QPainter::Antialiasing);
+
+    graphicsScene->addItem(drawable.get());
+    graphicsView->resize(600, 600);
+    //graphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
+
+    canvasLayout->addWidget(graphicsView);
     mainLayout->addWidget(canvasWidget, 3);
 }
 
@@ -249,7 +270,7 @@ void GraphWindow::setupUI() {
     setCentralWidget(centralWidget);
 
     setWindowTitle(window_title);
-    setGeometry(150, 150, 800, 900);
+    setGeometry(150, 150, 0, 0);
 
     auto *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setContentsMargins(15, 15, 15, 15);

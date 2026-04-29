@@ -8,7 +8,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-#include "../widgets/DrawableGraph.hpp"
+#include "../graphicsItems/DrawableGraph.hpp"
 #include "../StepsWindow.hpp"
 #include "../../model/PartitionTreeLoader.hpp"
 #include "../../model/Algorithms.hpp"
@@ -341,9 +341,10 @@ void ComparabilityBigraphWindow::onComputeBFSClicked() {
 
 void ComparabilityBigraphWindow::onShowStepsClicked() {
     appendOutput(">>> Open a new Window with execution details");
-    /*auto *stepsWindow = new StepsWindow(PartitionTreeLoader::loadPartitionTreeFromJson("partition_tree.json"));
+    auto *stepsWindow = new StepsWindow(PartitionTreeLoader::loadPartitionTreeFromJson("partition_tree.json"));
+    //PartitionTreeLoader::printPartitionTree(tree);
     stepsWindow->setAttribute(Qt::WA_DeleteOnClose);
-    stepsWindow->show();*/
+    stepsWindow->show();
 }
 
 void GraphWindow::onReShowMainWindow() {

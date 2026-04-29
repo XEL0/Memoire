@@ -4,7 +4,7 @@
 
 #include "model/Algorithms.hpp"
 #include "model/Graph.hpp"
-#include "view/widgets/DrawableGraph.hpp"
+#include "view/graphicsItems/DrawableGraph.hpp"
 #include "view/MainWindow.hpp"
 #include "model/PartitionTreeLoader.hpp"
 

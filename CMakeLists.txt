@@ -20,12 +20,19 @@ add_executable(${PROJECT_NAME}
         src/model/randomGenerator.hpp
         src/model/Algorithms.hpp
         src/model/Algorithms.cpp
-        src/view/widgets/DrawableGraph.hpp
-        src/view/widgets/DrawableGraph.cpp
-        src/view/graphs/GraphWindow.hpp
-        src/view/graphs/GraphWindow.cpp
+        src/view/graphicsItems/DrawableGraph.hpp
+        src/view/graphicsItems/DrawableGraph.cpp
+        src/view/graphicsItems/DrawableGraphNode.hpp
+        src/view/graphicsItems/DrawableGraphNode.cpp
+        src/view/graphicsItems/Arrow.hpp
+        src/view/graphicsItems/Arrow.cpp
+        src/view/graphicsItems/TreeLayout.hpp
         src/view/MainWindow.hpp
         src/view/MainWindow.cpp
+        src/view/graphs/GraphWindow.hpp
+        src/view/graphs/GraphWindow.cpp
+        src/view/StepsWindow.hpp
+        src/view/StepsWindow.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

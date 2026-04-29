@@ -8,23 +8,20 @@
 #include <map>
 
 #include "Graph.hpp"
-#include "../view/widgets/DrawableGraph.hpp"
+
 class DrawableComparabilityBigraph;
 using json = nlohmann::json;
 
 
 struct PartitionTreeNode {
-    std::vector<VertexPointer> vertices;
+    std::shared_ptr<ComparabilityBigraph> graph;
+    std::vector<std::shared_ptr<PartitionTreeNode>> children;
+    unsigned depth;
     double H;
-    int dim;
     bool U, FL, L;
     std::string label;
 
-    std::vector<std::shared_ptr<PartitionTreeNode>> children;
-    std::shared_ptr<DrawableComparabilityBigraph> drawable;
-
-    int depth;
-    int drawSize;
+    //int drawSize;
 };
 
 struct GlobalKnowledge {
@@ -61,6 +58,8 @@ public:
         const std::shared_ptr<DrawableComparabilityBigraph> &rootGraph = nullptr,
         int depth = 0) {
         node->depth = depth;
+        std::vector<VertexPointer> vertices;
+        unsigned dim = 0;
 
         if (depth == 0) {
             if (jsonNode.contains("embedding")) {
@@ -88,7 +87,7 @@ public:
             for (const auto &v : jsonNode["V"]) {
                 auto color = globalKnowledge->coloring.at(v.get<unsigned>());
                 color == 0 ? p++ : q++;
-                node->vertices.push_back(std::make_shared<ColoredEmbeddedVertex>(
+                vertices.push_back(std::make_shared<ColoredEmbeddedVertex>(
                     v.get<unsigned>(),
                     color,
                     globalKnowledge->embedding.at(v.get<unsigned>())
@@ -96,20 +95,22 @@ public:
             }
         }
         if (jsonNode.contains("H")) node->H = jsonNode["H"].get<double>();
-        if (jsonNode.contains("dim")) node->dim = jsonNode["dim"].get<unsigned>();
+        if (jsonNode.contains("dim")) dim = jsonNode["dim"].get<unsigned>();
         node->U = jsonNode.value("U", NULL);
         node->FL = jsonNode.value("FL", NULL);
         node->L = jsonNode.value("L", NULL);
         node->label = jsonNode.value("label", "unknown");
+        node->graph = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim, 1000);
+        node->graph->constructE(true);
 
-        node->drawSize = std::max(100, 300 / (depth + 1));
+        //node->drawSize = std::max(100, 300 / (depth + 1));
 
 
         // ===== CRÉER LE DRAWABLE POUR CE NŒUD =====
-        std::shared_ptr<ComparabilityBigraph> G = std::make_shared<ComparabilityBigraph>(node->vertices, p, q, node->dim, 900);
+        /*std::shared_ptr<ComparabilityBigraph> G = std::make_shared<ComparabilityBigraph>(node->vertices, p, q, node->dim, 900);
         node->drawable = std::make_shared<DrawableComparabilityBigraph>();
         node->drawable->linkGraph(G);
-        node->drawable->addLine(node->H, 1);
+        node->drawable->addLine(node->H, 1);*/
 
         if (jsonNode.contains("children") and jsonNode["children"].is_array()) {
             const auto &childrenArray = jsonNode["children"];
@@ -127,13 +128,13 @@ public:
 
         std::cout << indentStr << "Node: " << node->label << "\n";
         std::cout << indentStr << "  Vertices: ";
-        for (auto v : node->vertices) {
+        for (auto v : node->graph->enumerate()) {
             std::cout << v->getId() << " ";
         }
         std::cout << "\n";
-        std::cout << indentStr << "  Dim: " << node->dim << ", H: " << node->H << "\n";
+        std::cout << indentStr << "  Dim: " << node->graph->getDimension() << ", H: " << node->H << "\n";
         std::cout << indentStr << "  Flags: U=" << node->U << " FL=" << node->FL << " L=" << node->L << "\n";
-        std::cout << indentStr << "  Size for drawing: " << node->drawSize << "x" << node->drawSize << "\n";
+        //std::cout << indentStr << "  Size for drawing: " << node->drawSize << "x" << node->drawSize << "\n";
 
         if (!node->children.empty()) {
             std::cout << indentStr << "  Children: " << node->children.size() << "\n";

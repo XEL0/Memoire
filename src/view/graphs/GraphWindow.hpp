@@ -8,7 +8,7 @@
 #include <QPushButton>
 #include <QTextEdit>
 
-#include "../widgets/DrawableGraph.hpp"
+#include "../graphicsItems/DrawableGraph.hpp"
 
 class GraphWindow : public QMainWindow {
     Q_OBJECT

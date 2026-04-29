@@ -1,4 +1,4 @@
-#include "../widgets/DrawableGraph.hpp"
+#include "../graphicsItems/DrawableGraph.hpp"
 #include "../../model/RandomGenerator.hpp"
 
 #include <ostream>
@@ -159,6 +159,10 @@ void DrawableComparabilityGraph::backgroundPaint(QPainter* painter) {
 
 void DrawableComparabilityGraph::foregroundPaint(QPainter* painter) {
     if (line.second == 0) return;
+    if (line.second == 1) {
+        auto h = remap(QPointF(line.first, 0)).x();
+        painter->drawLine(QPointF(h, 0), QPointF(h, scene_height));
+    }
     auto h = remap(QPointF(0, line.first)).y();
     painter->drawLine(QPointF(0, h), QPointF(scene_width, h));
 }

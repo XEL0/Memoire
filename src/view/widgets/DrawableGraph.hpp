@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QWidget>
 #include <vector>
-#include "../model/Graph.hpp"
+#include "../../model/Graph.hpp"
 
 inline auto GREEN = QColor(5, 203, 123);
 inline auto PURPLE = QColor(135, 82, 214);

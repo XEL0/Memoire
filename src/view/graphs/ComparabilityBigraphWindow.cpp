@@ -1,4 +1,4 @@
-#include "GraphWindow.hpp"
+#include "ComparabilityBigraphWindow.hpp"
 
 #include <QDateTime>
 #include <QWidget>
@@ -6,21 +6,23 @@
 #include <QLabel>
 #include <QScrollBar>
 
-#include "DrawableGraph.hpp"
-#include "../model/Algorithms.hpp"
+#include "../widgets/DrawableGraph.hpp"
+#include "../StepsWindow.hpp"
+#include "../../model/PartitionTreeLoader.hpp"
+#include "../../model/Algorithms.hpp"
 
 
-GraphWindow::GraphWindow(
+ComparabilityBigraphWindow::ComparabilityBigraphWindow(
     QMainWindow* creator,
     const std::shared_ptr<DrawableComparabilityBigraph>& drawable,
     const std::shared_ptr<ComparabilityBigraph>& graph): creator(creator), drawable(drawable), graph(graph) {
     setupUI();
 }
 
-GraphWindow::~GraphWindow() {
+ComparabilityBigraphWindow::~ComparabilityBigraphWindow() {
 }
 
-void GraphWindow::setupUI() {
+void ComparabilityBigraphWindow::setupUI() {
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setStyleSheet("background-color: white;");
     setCentralWidget(centralWidget);
@@ -107,7 +109,7 @@ void GraphWindow::setupUI() {
     showStepsCheckBox->setFixedSize(40, 40);
     toggleBicliqueLayout->addWidget(showStepsCheckBox);
 
-    connect(showStepsCheckBox, &QCheckBox::toggled, this, &GraphWindow::onOptimizeToggled);
+    connect(showStepsCheckBox, &QCheckBox::toggled, this, &ComparabilityBigraphWindow::onOptimizeToggled);
 
     computeBicliqueCoverBtn = new QPushButton("Compute biclique cover");
     computeBicliqueCoverBtn->setStyleSheet(
@@ -130,7 +132,7 @@ void GraphWindow::setupUI() {
     toggleBicliqueLayout->addWidget(computeBicliqueCoverBtn, 1);
 
     connect(computeBicliqueCoverBtn, &QPushButton::clicked,
-            this, &GraphWindow::onComputeBicliqueCoverClicked);
+            this, &ComparabilityBigraphWindow::onComputeBicliqueCoverClicked);
 
     gridLayout->addWidget(toggleBicliqueCellWidget, 0, 0, 1, 1);
 
@@ -155,9 +157,7 @@ void GraphWindow::setupUI() {
     showStepsBtn->setMinimumHeight(40);
     gridLayout->addWidget(showStepsBtn, 0, 2);
 
-    connect(showStepsBtn, &QPushButton::clicked, this, [this]() {
-        appendOutput("Steps visualization not yet implemented");
-    });
+    connect(showStepsBtn, &QPushButton::clicked, this, &ComparabilityBigraphWindow::onShowStepsClicked);
 
     computeBFSBtn = new QPushButton("Compute BFS");
     computeBFSBtn->setStyleSheet(
@@ -179,24 +179,24 @@ void GraphWindow::setupUI() {
     computeBFSBtn->setMinimumHeight(40);
     gridLayout->addWidget(computeBFSBtn, 0, 1, 1, 1);
 
-    connect(computeBFSBtn, &QPushButton::clicked, this, &GraphWindow::onComputeBFSClicked);
+    connect(computeBFSBtn, &QPushButton::clicked, this, &ComparabilityBigraphWindow::onComputeBFSClicked);
 
     mainLayout->addWidget(controlsWidget);
     appendOutput("Graph Created. Apply algorithms by pressing buttons");
 }
 
-void GraphWindow::appendOutput(const QString &text) const {
+void ComparabilityBigraphWindow::appendOutput(const QString &text) const {
     QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
     QString formattedText = QString("[%1] %2").arg(timestamp, text);
     outputTextEdit->append(formattedText);
     outputTextEdit->verticalScrollBar()->setValue(outputTextEdit->verticalScrollBar()->maximum());
 }
 
-void GraphWindow::clearOutput() {
+void ComparabilityBigraphWindow::clearOutput() {
     outputTextEdit->clear();
 }
 
-void GraphWindow::onComputeBicliqueCoverClicked() {
+void ComparabilityBigraphWindow::onComputeBicliqueCoverClicked() {
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
     BicliquePartitioner partitioner = BicliquePartitioner();
@@ -231,11 +231,19 @@ void GraphWindow::onComputeBicliqueCoverClicked() {
     }
 }
 
-void GraphWindow::onOptimizeToggled(bool checked) {
+void ComparabilityBigraphWindow::onOptimizeToggled(bool checked) {
     optimize = checked;
 }
 
-void GraphWindow::onComputeBFSClicked() {
+void ComparabilityBigraphWindow::onComputeBFSClicked() {
     appendOutput("Not Implemented");
     //appendOutput("Show Steps: " + QString(showSteps ? "ON" : "OFF"));
+}
+
+void ComparabilityBigraphWindow::onShowStepsClicked() {
+    appendOutput(">>> Open a new Window with execution details");
+    /*auto *stepsWindow = new StepsWindow(PartitionTreeLoader::loadPartitionTreeFromJson("partition_tree.json"));
+    stepsWindow->setAttribute(Qt::WA_DeleteOnClose);
+    stepsWindow->show();*/
+
 }

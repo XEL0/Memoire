@@ -5,7 +5,7 @@
 #include <QRandomGenerator>
 
 #include "MainWindow.hpp"
-#include "GraphWindow.hpp"
+#include "graphs/ComparabilityBigraphWindow.hpp"
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) { setupUI();}
 
@@ -135,7 +135,6 @@ void MainWindow::setupUI() {
 
     connect(generateBtn, &QPushButton::clicked, this, &MainWindow::onGenerateClicked);
 
-    // Initialiser les options
     onGraphTypeChanged(0);
 }
 
@@ -337,15 +336,12 @@ void MainWindow::clearOptions() {
 QMap<QString, QVariant> MainWindow::getFormParameters() const {
     QMap<QString, QVariant> params;
 
-    // Type de graphe sélectionné
     params["graphType"] = graphTypeCombo->currentText();
 
-    // Récupérer tous les SpinBox
     for (auto it = spinBoxes.begin(); it != spinBoxes.end(); ++it) {
         params[it.key()] = it.value()->value();
     }
 
-    // Récupérer tous les Toggles
     for (auto it = toggleButtons.begin(); it != toggleButtons.end(); ++it) {
         params[it.key()] = it.value()->isChecked();
     }
@@ -387,7 +383,7 @@ void MainWindow::onGenerateClicked() {
         int redVertices = params["Red Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityBigraph>();
-        graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
+        graph->generate(blueVertices, redVertices, dimensions, 900);
 
         /*std::vector<VertexPointer> V{
             std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),
@@ -407,7 +403,7 @@ void MainWindow::onGenerateClicked() {
         drawableGraph->resize(size, size);
         drawableGraph->linkGraph(graph);
 
-        auto *graphWindow = new GraphWindow(this, drawableGraph, graph);
+        auto *graphWindow = new ComparabilityBigraphWindow(this, drawableGraph, graph);
         graphWindow->setAttribute(Qt::WA_DeleteOnClose);
         graphWindow->show();
         this->hide();

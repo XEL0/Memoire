@@ -1,5 +1,5 @@
-#include "DrawableGraph.hpp"
-#include "../model/RandomGenerator.hpp"
+#include "../widgets/DrawableGraph.hpp"
+#include "../../model/RandomGenerator.hpp"
 
 #include <iostream>
 #include <ostream>

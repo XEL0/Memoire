@@ -20,9 +20,10 @@ add_executable(${PROJECT_NAME}
         src/model/randomGenerator.hpp
         src/model/Algorithms.hpp
         src/model/Algorithms.cpp
-        src/view/DrawableGraph.cpp
-        src/view/GraphWindow.cpp
+        src/view/widgets/DrawableGraph.cpp
+        src/view/graphs/ComparabilityBigraphWindow.cpp
         src/view/MainWindow.cpp
+        #src/view/StepsWindow.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

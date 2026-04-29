@@ -6,14 +6,14 @@
 #include <QPushButton>
 #include <QTextEdit>
 
-#include "DrawableGraph.hpp"
+#include "../widgets/DrawableGraph.hpp"
 
-class GraphWindow : public QMainWindow {
+class ComparabilityBigraphWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableComparabilityBigraph>& drawable, const std::shared_ptr<ComparabilityBigraph>& graph);
-    ~GraphWindow() override;
+    ComparabilityBigraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableComparabilityBigraph>& drawable, const std::shared_ptr<ComparabilityBigraph>& graph);
+    ~ComparabilityBigraphWindow() override;
 
 
 
@@ -21,6 +21,7 @@ private slots:
     void onComputeBicliqueCoverClicked();
     void onOptimizeToggled(bool checked);
     void onComputeBFSClicked();
+    void onShowStepsClicked();
 
 private:
     void setupUI();

@@ -1,4 +1,4 @@
-#include "ComparabilityBigraphWindow.hpp"
+#include "GraphWindow.hpp"
 
 #include <QDateTime>
 #include <QWidget>
@@ -12,29 +12,48 @@
 #include "../../model/Algorithms.hpp"
 
 
-ComparabilityBigraphWindow::ComparabilityBigraphWindow(
-    QMainWindow* creator,
-    const std::shared_ptr<DrawableComparabilityBigraph>& drawable,
-    const std::shared_ptr<ComparabilityBigraph>& graph): creator(creator), drawable(drawable), graph(graph) {
+GraphWindow::GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableGraph> &drawable, const std::shared_ptr<Graph> &graph):
+    creator(creator), drawable(drawable), graph(graph)
+{
+    title = "Graph of " + QString::number(graph->size()) + " vertices";
+    window_title = "G" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
     setupUI();
 }
 
-ComparabilityBigraphWindow::~ComparabilityBigraphWindow() {
+BigraphWindow::BigraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableBigraph> &drawable, const std::shared_ptr<Bigraph> &graph):
+    GraphWindow(creator, drawable, graph){
+        title = "Bigraph of " + QString::number(graph->V1_size()) + " + " + QString::number(graph->V2_size()) +" vertices";
+        window_title = "BG" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
+        setupUI();
 }
 
-void ComparabilityBigraphWindow::setupUI() {
-    QWidget *centralWidget = new QWidget(this);
-    centralWidget->setStyleSheet("background-color: white;");
-    setCentralWidget(centralWidget);
+ComparabilityGraphWindow::ComparabilityGraphWindow(
+    QMainWindow* creator,
+    const std::shared_ptr<DrawableComparabilityGraph>& drawable,
+    const std::shared_ptr<ComparabilityGraph>& graph) :
+        GraphWindow(creator, drawable, graph){
+    title = "Comparability Graph of " + QString::number(graph->size()) + " vertices";
+    window_title = "CG" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
+    setupUI();
+}
 
-    setWindowTitle("Comparability Bigraph");
-    setGeometry(150, 150, 800, 900);
+ComparabilityBigraphWindow::ComparabilityBigraphWindow(
+    QMainWindow* creator,
+    const std::shared_ptr<DrawableComparabilityBigraph>& drawable,
+    const std::shared_ptr<ComparabilityBigraph>& graph) :
+        GraphWindow(creator, drawable, graph){
+    title = "Comparability Bigraph of " + QString::number(graph->V1_size()) + " + " + QString::number(graph->V2_size()) +" vertices";
+    window_title = "CBG" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
+    setupUI();
+}
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->setContentsMargins(15, 15, 15, 15);
-    mainLayout->setSpacing(10);
+GraphWindow::~GraphWindow() = default;
+BigraphWindow::~BigraphWindow() = default;
+ComparabilityGraphWindow::~ComparabilityGraphWindow() = default;
+ComparabilityBigraphWindow::~ComparabilityBigraphWindow() = default;
 
-    QLabel *canvasLabel = new QLabel("Comparability Bigraph");
+void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
+    auto* canvasLabel = new QLabel(title);
     canvasLabel->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
     mainLayout->addWidget(canvasLabel);
 
@@ -47,11 +66,13 @@ void ComparabilityBigraphWindow::setupUI() {
     canvasWidget->setMinimumHeight(600);
     canvasWidget->setMinimumWidth(600);
 
-    QVBoxLayout *canvasLayout = new QVBoxLayout(canvasWidget);
+    auto* canvasLayout = new QVBoxLayout(canvasWidget);
     canvasLayout->addWidget(drawable.get());
     mainLayout->addWidget(canvasWidget, 3);
+}
 
-    QLabel *outputLabel = new QLabel("Output:");
+void GraphWindow::setupConsole(QVBoxLayout* mainLayout) {
+    auto* outputLabel = new QLabel("Output:");
     outputLabel->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
     mainLayout->addWidget(outputLabel);
 
@@ -71,20 +92,32 @@ void ComparabilityBigraphWindow::setupUI() {
     outputTextEdit->setMinimumHeight(120);
 
     mainLayout->addWidget(outputTextEdit, 1);
+}
 
-
-    QWidget* controlsWidget = new QWidget();
+void GraphWindow::setupButtonsArea(QVBoxLayout* mainLayout) {
+    auto* controlsWidget = new QWidget();
     controlsWidget->setStyleSheet("background-color: white;");
-    QGridLayout* gridLayout = new QGridLayout(controlsWidget);
+    auto* gridLayout = new QGridLayout(controlsWidget);
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(10);
     gridLayout->setColumnStretch(0, 1);
     gridLayout->setColumnStretch(1, 1);
     gridLayout->setColumnStretch(2, 1);
+    setupButtons(gridLayout);
+    mainLayout->addWidget(controlsWidget);
+}
 
+void GraphWindow::setupButtons(QGridLayout* grid_layout) {}
 
-    QWidget *toggleBicliqueCellWidget = new QWidget();
-    QHBoxLayout *toggleBicliqueLayout = new QHBoxLayout(toggleBicliqueCellWidget);
+void ComparabilityBigraphWindow::setupButtons(QGridLayout* grid_layout) {
+    setupComputeBicliqueCover(grid_layout);
+    setupShowSteps(grid_layout);
+    setupComputeBFS(grid_layout);
+}
+
+void ComparabilityBigraphWindow::setupComputeBicliqueCover(QGridLayout* grid_layout) {
+    auto *toggleBicliqueCellWidget = new QWidget();
+    auto *toggleBicliqueLayout = new QHBoxLayout(toggleBicliqueCellWidget);
     toggleBicliqueLayout->setContentsMargins(0, 0, 0, 0);
     toggleBicliqueLayout->setSpacing(8);
 
@@ -134,9 +167,10 @@ void ComparabilityBigraphWindow::setupUI() {
     connect(computeBicliqueCoverBtn, &QPushButton::clicked,
             this, &ComparabilityBigraphWindow::onComputeBicliqueCoverClicked);
 
-    gridLayout->addWidget(toggleBicliqueCellWidget, 0, 0, 1, 1);
+    grid_layout->addWidget(toggleBicliqueCellWidget, 0, 0, 1, 1);
+}
 
-
+void ComparabilityBigraphWindow::setupShowSteps(QGridLayout* grid_layout) {
     showStepsBtn = new QPushButton("Biclique Cover Details");
     showStepsBtn->setStyleSheet(
         "QPushButton {"
@@ -155,10 +189,12 @@ void ComparabilityBigraphWindow::setupUI() {
         "}"
     );
     showStepsBtn->setMinimumHeight(40);
-    gridLayout->addWidget(showStepsBtn, 0, 2);
+    grid_layout->addWidget(showStepsBtn, 0, 2);
 
     connect(showStepsBtn, &QPushButton::clicked, this, &ComparabilityBigraphWindow::onShowStepsClicked);
+}
 
+void ComparabilityBigraphWindow::setupComputeBFS(QGridLayout* grid_layout) {
     computeBFSBtn = new QPushButton("Compute BFS");
     computeBFSBtn->setStyleSheet(
         "QPushButton {"
@@ -177,30 +213,47 @@ void ComparabilityBigraphWindow::setupUI() {
         "}"
     );
     computeBFSBtn->setMinimumHeight(40);
-    gridLayout->addWidget(computeBFSBtn, 0, 1, 1, 1);
+    grid_layout->addWidget(computeBFSBtn, 0, 1, 1, 1);
 
     connect(computeBFSBtn, &QPushButton::clicked, this, &ComparabilityBigraphWindow::onComputeBFSClicked);
+}
 
-    mainLayout->addWidget(controlsWidget);
+void GraphWindow::setupUI() {
+    auto *centralWidget = new QWidget(this);
+    centralWidget->setStyleSheet("background-color: white;");
+    setCentralWidget(centralWidget);
+
+    setWindowTitle(window_title);
+    setGeometry(150, 150, 800, 900);
+
+    auto *mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
+    mainLayout->setSpacing(10);
+
+    setupCanvas(mainLayout);
+    setupConsole(mainLayout);
+    setupButtonsArea(mainLayout);
+
     appendOutput("Graph Created. Apply algorithms by pressing buttons");
 }
 
-void ComparabilityBigraphWindow::appendOutput(const QString &text) const {
+void GraphWindow::appendOutput(const QString &text) const {
     QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
     QString formattedText = QString("[%1] %2").arg(timestamp, text);
     outputTextEdit->append(formattedText);
     outputTextEdit->verticalScrollBar()->setValue(outputTextEdit->verticalScrollBar()->maximum());
 }
 
-void ComparabilityBigraphWindow::clearOutput() {
+void GraphWindow::clearOutput() {
     outputTextEdit->clear();
 }
 
 void ComparabilityBigraphWindow::onComputeBicliqueCoverClicked() {
+    auto g = std::dynamic_pointer_cast<ComparabilityBigraph>(graph);
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
     BicliquePartitioner partitioner = BicliquePartitioner();
-    auto p = partitioner.partition(graph, optimize);
+    auto p = partitioner.partition(g, optimize);
     appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
     for (const auto& G: p) {
         auto blue = std::vector<QString>();

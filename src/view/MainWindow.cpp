@@ -5,7 +5,7 @@
 #include <QRandomGenerator>
 
 #include "MainWindow.hpp"
-#include "graphs/ComparabilityBigraphWindow.hpp"
+#include "graphs/GraphWindow.hpp"
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) { setupUI();}
 
@@ -367,6 +367,16 @@ void MainWindow::onGenerateClicked() {
         const auto graph = std::make_shared<Graph>();
         graph->generate(vertices);
         graph->constructE(complete);
+
+        auto drawableGraph = std::make_shared<DrawableGraph>();
+        drawableGraph->resize(size, size);
+        drawableGraph->linkGraph(graph);
+
+        auto *graphWindow = new GraphWindow(this, drawableGraph, graph);
+        graphWindow->setAttribute(Qt::WA_DeleteOnClose);
+        graphWindow->show();
+        this->hide();
+
     } else if (graphType == "Bipartite") {
         int blueVertices = params["Blue Vertices"].toInt();
         int redVertices = params["Red Vertices"].toInt();
@@ -375,12 +385,30 @@ void MainWindow::onGenerateClicked() {
         graph->generate(blueVertices, redVertices);
         graph->constructE(complete);
 
+        auto drawableGraph = std::make_shared<DrawableBigraph>();
+        drawableGraph->resize(size, size);
+        drawableGraph->linkGraph(graph);
+
+        auto *graphWindow = new BigraphWindow(this, drawableGraph, graph);
+        graphWindow->setAttribute(Qt::WA_DeleteOnClose);
+        graphWindow->show();
+        this->hide();
+
     } else if (graphType == "Comparability") {
         int vertices = params["Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityGraph>();
         graph->generate(vertices, dimensions, 1000);
         graph->constructE(true);
+
+        auto drawableGraph = std::make_shared<DrawableComparabilityGraph>();
+        drawableGraph->resize(size, size);
+        drawableGraph->linkGraph(graph);
+
+        auto *graphWindow = new ComparabilityGraphWindow(this, drawableGraph, graph);
+        graphWindow->setAttribute(Qt::WA_DeleteOnClose);
+        graphWindow->show();
+        this->hide();
 
     } else if (graphType == "Bicomparability") {
         int blueVertices = params["Blue Vertices"].toInt();

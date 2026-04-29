@@ -123,6 +123,8 @@ public:
     void generate(unsigned p, unsigned q);
     [[nodiscard]] bool isInV1(const VertexPointer& v) const { return dynamic_cast<ColoredVertex*>(v.get())->isInV1(); }
     [[nodiscard]] bool isInV2(const VertexPointer& v) const { return dynamic_cast<ColoredVertex*>(v.get())->isInV2(); }
+    [[nodiscard]] unsigned V1_size() const { return p; }
+    [[nodiscard]] unsigned V2_size() const { return q; }
 };
 
 

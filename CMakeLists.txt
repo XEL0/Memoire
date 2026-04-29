@@ -22,8 +22,8 @@ add_executable(${PROJECT_NAME}
         src/model/Algorithms.cpp
         src/view/widgets/DrawableGraph.hpp
         src/view/widgets/DrawableGraph.cpp
-        src/view/graphs/ComparabilityBigraphWindow.hpp
-        src/view/graphs/ComparabilityBigraphWindow.cpp
+        src/view/graphs/GraphWindow.hpp
+        src/view/graphs/GraphWindow.cpp
         src/view/MainWindow.hpp
         src/view/MainWindow.cpp
 )

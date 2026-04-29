@@ -13,7 +13,7 @@
 
 
 GraphWindow::GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableGraph> &drawable, const std::shared_ptr<Graph> &graph):
-    creator(creator), drawable(drawable), graph(graph)
+    creator(creator), drawable(drawable), graph(graph), is_creator_displayed(false)
 {
     title = "Graph of " + QString::number(graph->size()) + " vertices";
     window_title = "G" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
@@ -53,9 +53,34 @@ ComparabilityGraphWindow::~ComparabilityGraphWindow() = default;
 ComparabilityBigraphWindow::~ComparabilityBigraphWindow() = default;
 
 void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
+    auto* headerLayout = new QHBoxLayout();
     auto* canvasLabel = new QLabel(title);
     canvasLabel->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
-    mainLayout->addWidget(canvasLabel);
+
+    mainWindowVisibilityManager = new QPushButton("+");
+    mainWindowVisibilityManager->setStyleSheet(
+        "QPushButton {"
+        "  background-color: white; "
+        "  color: black; "
+        "  padding: 2px; "
+        "  border-radius: 4px; "
+        "  font-size: 13px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #F5F5F5;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #E8E8E8;"
+        "}"
+    );
+
+    headerLayout->addWidget(canvasLabel);
+    headerLayout->addStretch();
+    headerLayout->addWidget(mainWindowVisibilityManager);
+    connect(mainWindowVisibilityManager, &QPushButton::clicked,
+        this, &ComparabilityBigraphWindow::onReShowMainWindow);
+
+    mainLayout->addLayout(headerLayout);
 
     canvasWidget = new QWidget();
     canvasWidget->setStyleSheet(
@@ -298,5 +323,15 @@ void ComparabilityBigraphWindow::onShowStepsClicked() {
     /*auto *stepsWindow = new StepsWindow(PartitionTreeLoader::loadPartitionTreeFromJson("partition_tree.json"));
     stepsWindow->setAttribute(Qt::WA_DeleteOnClose);
     stepsWindow->show();*/
+}
 
+void GraphWindow::onReShowMainWindow() {
+    if (is_creator_displayed) {
+        creator->hide();
+        mainWindowVisibilityManager->setText("+");
+    } else {
+        creator->show();
+        mainWindowVisibilityManager->setText("-");
+    }
+    is_creator_displayed = not is_creator_displayed;
 }

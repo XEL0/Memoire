@@ -15,6 +15,8 @@ class GraphWindow : public QMainWindow {
 public:
     GraphWindow(QMainWindow *creator, const std::shared_ptr<DrawableGraph>& drawable, const std::shared_ptr<Graph>& graph);
     ~GraphWindow() override;
+protected slots:
+    void onReShowMainWindow();
 
 protected:
     void setupUI();
@@ -27,8 +29,10 @@ protected:
 
     QWidget *canvasWidget{};
     QTextEdit *outputTextEdit{};
+    QPushButton *mainWindowVisibilityManager{};
 
     QMainWindow* creator;
+    bool is_creator_displayed; //todo static and update on close, should be in another class
     QString title;
     QString window_title;
     std::shared_ptr<DrawableGraph> drawable;

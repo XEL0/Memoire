@@ -42,7 +42,7 @@ void DrawableGraph::drawEdges(const std::unique_ptr<QPainter>& painter) const {
     for (const auto& [u, v] : G->enumerate_edges()) {
         const auto [position_u, color_u] = this->vertices.at(u->getId());
         const auto [position_v, color_v] = this->vertices.at(v->getId());
-        painter->drawLine(normalize(position_u), normalize(position_v));
+        painter->drawLine(remap(position_u), remap(position_v));
     }
 }
 
@@ -51,7 +51,7 @@ void DrawableGraph::drawVertices(const std::unique_ptr<QPainter>& painter) const
     const float writing_size = static_cast<float>(minSize()) * 1.5f/900;
 
     for (const auto& [v, dv] : this->vertices) {
-        const auto& p = normalize(dv.position);
+        const auto& p = remap(dv.position);
         const auto& color = dv.color;
 
         painter->setPen(Qt::NoPen);
@@ -102,7 +102,7 @@ void DrawableComparabilityGraph::embed() {
             y_ = graph->getEmbeddingAt(v, 1);
         }
         this->vertices[v->getId()] = {
-            QPointF(x_, this->height() - y_),
+            QPointF(x_, y_),
             getColor(v)
         };
     }
@@ -123,7 +123,7 @@ QColor DrawableComparabilityBigraph::getColor(const VertexPointer& v) const {
 }
 
 
-QPointF DrawableGraph::normalize(QPointF coordinate) const {
+QPointF DrawableGraph::remap(QPointF coordinate) const {
     const double size = this->point_space_bound.second;
     const double m = minSize();
     const double pad = padding_ratio * m;
@@ -132,7 +132,7 @@ QPointF DrawableGraph::normalize(QPointF coordinate) const {
     const double y_shift = (this->height() - m) / 2;
 
     return {pad + (coordinate.x() / size) * (m - 2.0 * pad) + x_shift,
-               pad + (coordinate.y() / size) * (m - 2.0 * pad) + y_shift};
+               pad + (1-coordinate.y() / size) * (m - 2.0 * pad) + y_shift};
 }
 
 void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>& painter) const {
@@ -142,8 +142,8 @@ void DrawableComparabilityGraph::drawComparisons(const std::unique_ptr<QPainter>
 
     for (const auto& v : graph->enumerate()) {
         const auto& dv = this->vertices.at(v->getId());
-        const auto& p = normalize(dv.position);
-        if (canCompareFrom(v)) continue;
+        const auto& p = remap(dv.position);
+        if (not canCompareFrom(v)) continue;
         painter->drawLine(p + QPointF(-length, 0), p);
         painter->drawLine(p + QPointF(0, length), p);
     }
@@ -156,7 +156,7 @@ bool DrawableComparabilityGraph::canCompareFrom(const VertexPointer& v) const {
 
 bool DrawableComparabilityBigraph::canCompareFrom(const VertexPointer& v) const {
     auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
-    return graph->isInV1(v);
+    return graph->isInV2(v);
 }
 
 void DrawableGraph::backgroundPaint(const std::unique_ptr<QPainter>& painter){}
@@ -169,6 +169,6 @@ void DrawableGraph::foregroundPaint(const std::unique_ptr<QPainter>& painter){}
 
 void DrawableComparabilityGraph::foregroundPaint(const std::unique_ptr<QPainter>& painter) {
     if (line.second == 0) return;
-    auto [w, h] = normalize(QPointF(0, this->height() - line.first));
+    auto [w, h] = remap(QPointF(0, this->height() - line.first));
     painter->drawLine(QPointF(0, h), QPointF(this->width(), h));
 }

@@ -27,7 +27,7 @@ protected:
     float padding_ratio = 0.1f;
     std::pair<unsigned, unsigned> point_space_bound;
 
-    [[nodiscard]] virtual QPointF normalize(QPointF coordinate) const;
+    [[nodiscard]] virtual QPointF remap(QPointF coordinate) const;
     virtual void embed();
     [[nodiscard]] virtual int minSize() const;
     virtual std::unique_ptr<QPainter> initializePainter();

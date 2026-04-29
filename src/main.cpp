@@ -1,14 +1,18 @@
 #include <iostream>
 #include <QApplication>
+#include <QJsonObject>
 
 #include "model/Algorithms.hpp"
 #include "model/Graph.hpp"
-#include "view/DrawableGraph.hpp"
+#include "view/widgets/DrawableGraph.hpp"
 #include "view/MainWindow.hpp"
+#include "model/PartitionTreeLoader.hpp"
 
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+    //auto json = PartitionTreeLoader::loadPartitionTreeFromJson("partition_tree.json");
+    //PartitionTreeLoader::printPartitionTree(json);
 
     MainWindow window;
     window.show();

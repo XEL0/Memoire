@@ -69,8 +69,8 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     const std::shared_ptr<ComparabilityBigraph>& G, const bool optimize_size) const
 {
     if (G->size() <= 1) return {};
-    if (optimize_size and areAllV1LessThanV2(G)) return {G};
     if (G->dim == 0) return std::vector{G};
+    if (optimize_size and areAllV1LessThanV2(G)) return {G};
 
     const double H = findHyperplane(G, G->dim-1);
 
@@ -111,14 +111,14 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
         res = partition_light(flattened_CG, optimize_size);
     }
 
-    if (nb_v2_under) {
+    if (nb_v1_under and nb_v2_under) {
         const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
             std::move(V_under_H), nb_v1_under, nb_v2_under, G->dim, G->getPointSpaceLimit());
         const auto part2 = partition_light(under_H_CG, optimize_size);
         res.insert(res.end(), part2.begin(), part2.end());
     }
 
-    if (nb_v1_over) {
+    if (nb_v1_over and nb_v2_over) {
         const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
             std::move(V_over_H), nb_v1_over, nb_v2_over, G->dim, G->getPointSpaceLimit());
         const auto part3 = partition_light(over_H_CG, optimize_size);
@@ -132,7 +132,6 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     const std::shared_ptr<ComparabilityBigraph>& G, const bool optimize_size, json& node) const
 {
     node["dim"]  = G->dim;
-    node["size"] = G->size();
     json V = json::array();
     for (const auto& v : G->vertices) {
         V.push_back(v->getId());
@@ -144,17 +143,19 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
         return {};
     }
 
-    std::cout << *G << std::endl;
+    if (G->dim == 0) {
+        return std::vector{G};
+    }
+
+    //std::cout << *G << std::endl;
     if (optimize_size) {
         if (areAllV1LessThanV2(G)) {
+            //std::cout << "optimized" << std::endl;
             node["optimized"] = true;
             return {G};
         }
     }
 
-    if (G->dim == 0) {
-        return std::vector{G};
-    }
 
     double H = findHyperplane(G, G->dim-1);
 
@@ -191,6 +192,9 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     H = adjustHyperplane(G, H);
     node["H"] = H;
     auto res = std::vector<std::shared_ptr<ComparabilityBigraph>>{};
+    node["FL"] = nb_v1_under and nb_v2_over;
+    node["L"] = nb_v1_under and nb_v2_under;
+    node["U"] = nb_v1_over and nb_v2_over;
 
     if (nb_v1_under and nb_v2_over) {
         json child;
@@ -201,7 +205,7 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
         node["children"].push_back(child);
     }
 
-    if (nb_v2_under) {
+    if (nb_v1_under and nb_v2_under) {
         json child;
         child["label"] = "L";
         const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
@@ -211,7 +215,7 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
         res.insert(res.end(), part2.begin(), part2.end());
     }
 
-    if (nb_v1_over) {
+    if (nb_v1_over and nb_v2_over) {
         json child;
         child["label"] = "U";
         const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
@@ -224,5 +228,5 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
 }
 
 bool BicliquePartitioner::areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph>& G) const {
-    return G->isComplete(); //todo NOT CORRECT
+    return G->isComplete(); //todo find first blue and last red; check completeness in between
 }

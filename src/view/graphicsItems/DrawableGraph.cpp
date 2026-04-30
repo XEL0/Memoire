@@ -80,9 +80,31 @@ std::pair<float, float> DrawableGraph::findRadiusAndWritingSize() const {
 }
 
 std::pair<float, float> DrawableComparabilityGraph::findRadiusAndWritingSize() const {
-    auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    return DrawableGraph::findRadiusAndWritingSize();
+}
+
+std::pair<float, float> DrawableComparabilityBigraph::findRadiusAndWritingSize() const {
+    const auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
     if (graph->getDimension() != 0) return DrawableGraph::findRadiusAndWritingSize();
-    return {radiusIn0D, writingIn0D};
+
+    const unsigned p = graph->V1_size();
+    const unsigned q = graph->V2_size();
+    const double height = point_space_bound.second;
+
+    const double zone_size_p = (p > 0) ? height / static_cast<double>(p) : height;
+    const double zone_size_q = (q > 0) ? height / static_cast<double>(q) : height;
+    const double max_radius_virtual = std::min(zone_size_p / 4.0, zone_size_q / 4.0);
+    const double radius_virtual = std::min(100.0, max_radius_virtual);
+
+    const double m = minSize();
+    const double pad = padding_ratio * m;
+    const double drawable_size = m - 2.0 * pad;
+    const double scale_factor = drawable_size / height;
+
+    float radius = static_cast<float>(radius_virtual * scale_factor);
+    float writing_size = radius * 1.5f / (0.02f * 900.0f);
+
+    return {radius, writing_size};
 }
 
 void DrawableGraph::embed() {
@@ -101,7 +123,7 @@ QColor DrawableGraph::getColor(const VertexPointer& v) const {
     return CYAN;
 }
 
-QPointF DrawableGraph::remap(QPointF coordinate) const {
+QPointF DrawableGraph::remap(const QPointF coordinate) const {
     const double size = this->point_space_bound.second;
     const double m = minSize();
     const double pad = padding_ratio * m;
@@ -199,6 +221,7 @@ void DrawableComparabilityGraph::drawEdges(QPainter* painter) const {
         DrawableGraph::drawEdges(painter);
     } else { // quadratic bezier curve
         painter->setPen(QPen(Qt::black, 1));
+        painter->setBrush(Qt::NoBrush);
         for (const auto& [u, v] : G->enumerate_edges()) {
             const auto [position_u, color_u] = this->vertices.at(u->getId());
             const auto [position_v, color_v] = this->vertices.at(v->getId());
@@ -222,34 +245,32 @@ void DrawableComparabilityGraph::drawEdges(QPainter* painter) const {
 void DrawableComparabilityGraph::embedIn0D(){}
 
 void DrawableComparabilityBigraph::embedIn0D() {
-    auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
-    unsigned p = graph->V1_size();
-    unsigned q = graph->V2_size();
-    const double m = minSize();
-    const double pad = padding_ratio * m;
+    const auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
+    const unsigned p = graph->V1_size();
+    const unsigned q = graph->V2_size();
 
-    double height = scene_height - 2 * pad;
-    double axis_subdivision_p = height / p;
-    double axis_subdivision_q = height / q;
-    auto radius = std::min(100., std::min(axis_subdivision_p, axis_subdivision_q)) ;
+    const double height = graph->getPointSpaceLimit();
+    this->point_space_bound = {0, static_cast<unsigned>(height)};
 
-    double startY_p = pad + axis_subdivision_p / 2;
-    double startY_q = pad + axis_subdivision_q / 2;
-    if (p == 1) startY_p = scene_height / 2;
-    if (q == 1) startY_q = scene_height / 2;
+    // divide the space in p or q sections, each one contains a node
+    const double zone_size_p = (p > 0) ? height / static_cast<double>(p) : height;
+    const double zone_size_q = (q > 0) ? height / static_cast<double>(q) : height;
+    double startY_p = zone_size_p / 2.0; // at the center of the section
+    double startY_q = zone_size_q / 2.0;
+    if (p == 1) startY_p = height / 2.0;
+    if (q == 1) startY_q = height / 2.0;
 
     int p_count = 0;
     int q_count = 0;
     for (const auto& v : graph->enumerate()) {
         if (graph->isInV1(v)) {
-            double y = startY_p + p_count * axis_subdivision_p;
-            this->vertices[v->getId()] = {QPointF(250, y), getColor(v)};
+            const double y = startY_p + p_count * zone_size_p;
+            this->vertices[v->getId()] = {QPointF(height / 4.0, y), getColor(v)};
+            p_count++;
         } else {
-            double y = startY_q + q_count * axis_subdivision_q;
-            this->vertices[v->getId()] = {QPointF(750, y), getColor(v)};
+            const double y = startY_q + q_count * zone_size_q;
+            this->vertices[v->getId()] = {QPointF(3.0 * height / 4.0, y), getColor(v)};
+            q_count++;
         }
     }
-
-    radiusIn0D = radius;
-    writingIn0D = radius / 0.02f * 1.5/900;
 }

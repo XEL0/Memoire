@@ -69,7 +69,6 @@ protected:
     float writingIn0D = 0;
 
     std::pair<float, float> findRadiusAndWritingSize() const override;
-
     void embed() override;
     virtual void embedIn0D();
     [[nodiscard]] virtual bool canCompareFrom(const VertexPointer& v) const;
@@ -88,6 +87,7 @@ public:
 
 class DrawableComparabilityBigraph : public DrawableComparabilityGraph {
 protected:
+    std::pair<float, float> findRadiusAndWritingSize() const override;
     [[nodiscard]] QColor getColor(const VertexPointer& v) const override;
     [[nodiscard]] bool canCompareFrom(const VertexPointer& v) const override;
     void embedIn0D() override;

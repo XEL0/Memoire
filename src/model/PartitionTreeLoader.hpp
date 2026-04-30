@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <optional>
 
 #include "Graph.hpp"
 
@@ -18,10 +19,11 @@ struct PartitionTreeNode {
     std::vector<std::shared_ptr<PartitionTreeNode>> children;
     unsigned depth;
     double H;
-    bool U, FL, L;
+    std::optional<bool> U;
+    std::optional<bool> FL;
+    std::optional<bool> L;
     std::string label;
-
-    //int drawSize;
+    //todo truncable boolean
 };
 
 struct GlobalKnowledge {
@@ -96,21 +98,14 @@ public:
         }
         if (jsonNode.contains("H")) node->H = jsonNode["H"].get<double>();
         if (jsonNode.contains("dim")) dim = jsonNode["dim"].get<unsigned>();
-        node->U = jsonNode.value("U", NULL);
-        node->FL = jsonNode.value("FL", NULL);
-        node->L = jsonNode.value("L", NULL);
+
+        node->U = jsonNode.contains("U") ? jsonNode["U"].get<bool>() : node->U = std::nullopt;
+        node->FL = jsonNode.contains("FL") ? jsonNode["FL"].get<bool>() : node->FL = std::nullopt;
+        node->L = jsonNode.contains("L") ? jsonNode["L"].get<bool>() : node->L = std::nullopt;
+
         node->label = jsonNode.value("label", "unknown");
         node->graph = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim, 1000);
         node->graph->constructE(true);
-
-        //node->drawSize = std::max(100, 300 / (depth + 1));
-
-
-        // ===== CRÉER LE DRAWABLE POUR CE NŒUD =====
-        /*std::shared_ptr<ComparabilityBigraph> G = std::make_shared<ComparabilityBigraph>(node->vertices, p, q, node->dim, 900);
-        node->drawable = std::make_shared<DrawableComparabilityBigraph>();
-        node->drawable->linkGraph(G);
-        node->drawable->addLine(node->H, 1);*/
 
         if (jsonNode.contains("children") and jsonNode["children"].is_array()) {
             const auto &childrenArray = jsonNode["children"];
@@ -133,8 +128,15 @@ public:
         }
         std::cout << "\n";
         std::cout << indentStr << "  Dim: " << node->graph->getDimension() << ", H: " << node->H << "\n";
-        std::cout << indentStr << "  Flags: U=" << node->U << " FL=" << node->FL << " L=" << node->L << "\n";
-        //std::cout << indentStr << "  Size for drawing: " << node->drawSize << "x" << node->drawSize << "\n";
+
+        auto printOpt = [](std::optional<bool> opt) -> std::string {
+            if (!opt.has_value()) return "null";
+            return opt.value() ? "true" : "false";
+        };
+
+        std::cout << indentStr << "  Flags: U=" << printOpt(node->U)
+                  << " FL=" << printOpt(node->FL)
+                  << " L=" << printOpt(node->L) << "\n";
 
         if (!node->children.empty()) {
             std::cout << indentStr << "  Children: " << node->children.size() << "\n";

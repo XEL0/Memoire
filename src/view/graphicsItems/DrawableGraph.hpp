@@ -26,6 +26,7 @@ protected:
     std::pair<unsigned, unsigned> point_space_bound;
     double scene_width = 1000.0;
     double scene_height = 1000.0;
+    QColor backgroundColor = Qt::white;
 
     [[nodiscard]] virtual QPointF remap(QPointF coordinate) const;
     virtual void embed();
@@ -33,7 +34,7 @@ protected:
     [[nodiscard]] virtual QColor getColor(const VertexPointer& v) const;
     virtual void drawEdges(QPainter* painter) const;
     virtual void drawVertices(QPainter* painter) const;
-
+    virtual std::pair<float, float> findRadiusAndWritingSize() const;
     virtual void backgroundPaint(QPainter* painter);
     virtual void foregroundPaint(QPainter* painter);
 
@@ -47,6 +48,7 @@ public:
     virtual void linkGraph(const std::shared_ptr<Graph>& G);
 
     void setSceneDimensions(double width, double height);
+    void setBackgroundColor(const QColor& color) { backgroundColor = color; }
 };
 
 
@@ -63,12 +65,18 @@ public:
 class DrawableComparabilityGraph : public DrawableGraph {
 protected:
     std::pair<double, unsigned> line = {0, 0};
+    float radiusIn0D = 0;
+    float writingIn0D = 0;
+
+    std::pair<float, float> findRadiusAndWritingSize() const override;
 
     void embed() override;
+    virtual void embedIn0D();
     [[nodiscard]] virtual bool canCompareFrom(const VertexPointer& v) const;
     virtual void drawComparisons(QPainter* painter) const;
     void backgroundPaint(QPainter* painter) override;
     void foregroundPaint(QPainter* painter) override;
+    void drawEdges(QPainter* painter) const override;
 
 public:
     using DrawableGraph::DrawableGraph;
@@ -82,6 +90,7 @@ class DrawableComparabilityBigraph : public DrawableComparabilityGraph {
 protected:
     [[nodiscard]] QColor getColor(const VertexPointer& v) const override;
     [[nodiscard]] bool canCompareFrom(const VertexPointer& v) const override;
+    void embedIn0D() override;
 
 public:
     using DrawableComparabilityGraph::DrawableComparabilityGraph;

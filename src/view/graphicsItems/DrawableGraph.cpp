@@ -5,8 +5,7 @@
 #include <QPainter>
 #include <QtCore/qcoreapplication.h>
 
-DrawableGraph::DrawableGraph(QGraphicsItem* parent)
-    : QGraphicsItem(parent) {
+DrawableGraph::DrawableGraph(QGraphicsItem* parent): QGraphicsItem(parent) {
     setAcceptHoverEvents(true);
 }
 
@@ -20,7 +19,7 @@ void DrawableGraph::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
 
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(QPen(Qt::black, minSize() * 1./900));
-
+    painter->fillRect(QRectF(0, 0, scene_width, scene_height), backgroundColor);
     this->backgroundPaint(painter);
     this->drawEdges(painter);
     this->drawVertices(painter);
@@ -45,6 +44,7 @@ void DrawableGraph::linkGraph(const std::shared_ptr<Graph>& G) {
 }
 
 void DrawableGraph::drawEdges(QPainter* painter) const {
+    painter->setPen(QPen(Qt::black, 1));
     for (const auto& [u, v] : G->enumerate_edges()) {
         const auto [position_u, color_u] = this->vertices.at(u->getId());
         const auto [position_v, color_v] = this->vertices.at(v->getId());
@@ -53,8 +53,7 @@ void DrawableGraph::drawEdges(QPainter* painter) const {
 }
 
 void DrawableGraph::drawVertices(QPainter* painter) const {
-    const float radius = static_cast<float>(minSize()) * 0.02f;
-    const float writing_size = static_cast<float>(minSize()) * 1.5f/900;
+    const auto [radius, writing_size] = findRadiusAndWritingSize();
 
     for (const auto& [v, dv] : this->vertices) {
         const auto& p = remap(dv.position);
@@ -72,6 +71,18 @@ void DrawableGraph::drawVertices(QPainter* painter) const {
         painter->setFont(font);
         painter->drawText(textRect, Qt::AlignCenter, QString::number(v));
     }
+}
+
+std::pair<float, float> DrawableGraph::findRadiusAndWritingSize() const {
+    const float radius = static_cast<float>(minSize()) * 0.02f;
+    const float writing_size = static_cast<float>(minSize()) * 1.5f/900;
+    return {radius, writing_size};
+}
+
+std::pair<float, float> DrawableComparabilityGraph::findRadiusAndWritingSize() const {
+    auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    if (graph->getDimension() != 0) return DrawableGraph::findRadiusAndWritingSize();
+    return {radiusIn0D, writingIn0D};
 }
 
 void DrawableGraph::embed() {
@@ -113,15 +124,15 @@ QColor DrawableBigraph::getColor(const VertexPointer& v) const {
 
 void DrawableComparabilityGraph::embed() {
     auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    if (graph->getDimension() == 0) {
+        embedIn0D();
+        return;
+    }
     this->point_space_bound = {0, graph->getPointSpaceLimit()};
 
     for (auto& v : graph->enumerate()) {
         unsigned x_, y_;
-        if (graph->getDimension() == 0) {
-            x_ = static_cast<unsigned>(scene_width / 2);
-            y_ = static_cast<unsigned>(scene_height / 2);
-        }
-        else if (graph->getDimension() == 1) {
+        if (graph->getDimension() == 1) {
             x_ = graph->getEmbeddingAt(v, 0);
             y_ = static_cast<unsigned>(scene_height / 2);
         } else {
@@ -137,6 +148,7 @@ void DrawableComparabilityGraph::embed() {
 
 void DrawableComparabilityGraph::drawComparisons(QPainter* painter) const {
     auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    if (graph->getDimension() <= 1) return;
     const float length = static_cast<float>(minSize()) * 0.1f;
     painter->setPen(QPen(Qt::darkGray, 1, Qt::DashLine, Qt::RoundCap));
 
@@ -159,12 +171,15 @@ void DrawableComparabilityGraph::backgroundPaint(QPainter* painter) {
 
 void DrawableComparabilityGraph::foregroundPaint(QPainter* painter) {
     if (line.second == 0) return;
+    painter->setPen(QPen(QColor(255, 218, 96), 1));
     if (line.second == 1) {
         auto h = remap(QPointF(line.first, 0)).x();
         painter->drawLine(QPointF(h, 0), QPointF(h, scene_height));
     }
-    auto h = remap(QPointF(0, line.first)).y();
-    painter->drawLine(QPointF(0, h), QPointF(scene_width, h));
+    else if (line.second == 2) {
+        auto h = remap(QPointF(0, line.first)).y();
+        painter->drawLine(QPointF(0, h), QPointF(scene_width, h));
+    }
 }
 
 
@@ -176,4 +191,65 @@ QColor DrawableComparabilityBigraph::getColor(const VertexPointer& v) const {
 bool DrawableComparabilityBigraph::canCompareFrom(const VertexPointer& v) const {
     auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
     return graph->isInV2(v);
+}
+
+void DrawableComparabilityGraph::drawEdges(QPainter* painter) const {
+    auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    if (graph->getDimension() != 1) {
+        DrawableGraph::drawEdges(painter);
+    } else { // quadratic bezier curve
+        painter->setPen(QPen(Qt::black, 1));
+        for (const auto& [u, v] : G->enumerate_edges()) {
+            const auto [position_u, color_u] = this->vertices.at(u->getId());
+            const auto [position_v, color_v] = this->vertices.at(v->getId());
+            QPainterPath path;
+            auto p1 = remap(position_u);
+            auto p2 = remap(position_v);
+            path.moveTo(p1);
+
+            double midX = (p1.x() + p2.x()) / 2.0;
+            double midY = p1.y();
+            double curveHeight = std::abs(p2.x() - p1.x()) * 0.3;
+
+            QPointF controlPoint(midX, midY - curveHeight);
+
+            path.quadTo(controlPoint, p2);
+            painter->drawPath(path);
+        }
+    }
+}
+
+void DrawableComparabilityGraph::embedIn0D(){}
+
+void DrawableComparabilityBigraph::embedIn0D() {
+    auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
+    unsigned p = graph->V1_size();
+    unsigned q = graph->V2_size();
+    const double m = minSize();
+    const double pad = padding_ratio * m;
+
+    double height = scene_height - 2 * pad;
+    double axis_subdivision_p = height / p;
+    double axis_subdivision_q = height / q;
+    auto radius = std::min(100., std::min(axis_subdivision_p, axis_subdivision_q)) ;
+
+    double startY_p = pad + axis_subdivision_p / 2;
+    double startY_q = pad + axis_subdivision_q / 2;
+    if (p == 1) startY_p = scene_height / 2;
+    if (q == 1) startY_q = scene_height / 2;
+
+    int p_count = 0;
+    int q_count = 0;
+    for (const auto& v : graph->enumerate()) {
+        if (graph->isInV1(v)) {
+            double y = startY_p + p_count * axis_subdivision_p;
+            this->vertices[v->getId()] = {QPointF(250, y), getColor(v)};
+        } else {
+            double y = startY_q + q_count * axis_subdivision_q;
+            this->vertices[v->getId()] = {QPointF(750, y), getColor(v)};
+        }
+    }
+
+    radiusIn0D = radius;
+    writingIn0D = radius / 0.02f * 1.5/900;
 }

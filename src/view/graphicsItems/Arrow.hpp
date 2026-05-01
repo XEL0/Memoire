@@ -3,32 +3,27 @@
 
 #include <QGraphicsPathItem>
 #include <QGraphicsTextItem>
-#include <memory>
 
 class DrawableComparabilityBigraphNode;
 
 class Arrow : public QGraphicsPathItem {
 public:
-    enum { Type = UserType + 1 };
-    
-    Arrow(DrawableComparabilityBigraphNode *fromNode, DrawableComparabilityBigraphNode *toNode, const QString &label,
+    Arrow(DrawableComparabilityBigraphNode *fromNode,
+          DrawableComparabilityBigraphNode *toNode,
+          QString label,
           QGraphicsItem *parent = nullptr);
-    
-    int type() const override { return Type; }
-    
-    DrawableComparabilityBigraphNode *startNode() const { return startNode_; }
-    DrawableComparabilityBigraphNode *endNode() const { return endNode_; }
-    
+    ~Arrow() override;
+
+    DrawableComparabilityBigraphNode *startNode() const { return start_node; }
+    DrawableComparabilityBigraphNode *endNode() const { return end_node; }
     void updatePath();
-    
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
-
 private:
-    DrawableComparabilityBigraphNode *startNode_;
-    DrawableComparabilityBigraphNode *endNode_;
-    QString label_;
-    std::unique_ptr<QGraphicsTextItem> labelItem_;
+    DrawableComparabilityBigraphNode *start_node;
+    DrawableComparabilityBigraphNode *end_node;
+    QString label;
+    QGraphicsTextItem *label_item;
 };
 
 #endif // MEMOIRE_ARROW_HPP

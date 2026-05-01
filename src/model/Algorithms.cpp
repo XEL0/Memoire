@@ -199,29 +199,29 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     if (nb_v1_under and nb_v2_over) {
         json child;
         child["label"] = "FL";
-        const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
-    std::move(V_prime), nb_v1_under, nb_v2_over, G->dim-1, G->getPointSpaceLimit());
-        res = partition_save(flattened_CG, optimize_size, child);
         node["children"].push_back(child);
+        const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
+            std::move(V_prime), nb_v1_under, nb_v2_over, G->dim-1, G->getPointSpaceLimit());
+        res = partition_save(flattened_CG, optimize_size, node["children"].back());
     }
 
     if (nb_v1_under and nb_v2_under) {
         json child;
         child["label"] = "L";
+        node["children"].push_back(child);
         const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
             std::move(V_under_H), nb_v1_under, nb_v2_under, G->dim, G->getPointSpaceLimit());
-        const auto part2 = partition_save(under_H_CG, optimize_size, child);
-        node["children"].push_back(child);
+        const auto part2 = partition_save(under_H_CG, optimize_size, node["children"].back());
         res.insert(res.end(), part2.begin(), part2.end());
     }
 
     if (nb_v1_over and nb_v2_over) {
         json child;
         child["label"] = "U";
+        node["children"].push_back(child);
         const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
             std::move(V_over_H), nb_v1_over, nb_v2_over, G->dim, G->getPointSpaceLimit());
-        const auto part3 = partition_save(over_H_CG, optimize_size, child);
-        node["children"].push_back(child);
+        const auto part3 = partition_save(over_H_CG, optimize_size, node["children"].back());
         res.insert(res.end(), part3.begin(), part3.end());
     }
     return res;

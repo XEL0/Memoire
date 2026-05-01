@@ -70,6 +70,7 @@ public:
                 for (auto embedding = json_node["embedding"].get<json::object_t>();
                     const auto &[vertexStr, coords] : embedding) {
                     unsigned vertex = std::stoi(vertexStr);
+                    global_knowledge->embedding[vertex] = std::vector<unsigned>();
                     for (const auto& coord : coords) {
                         global_knowledge->embedding[vertex].push_back(coord.get<unsigned>());
                     }
@@ -109,11 +110,9 @@ public:
         node->graph->constructE(true);
 
         if (json_node.contains("children") and json_node["children"].is_array()) {
-            const auto &children_array = json_node["children"];
-
-            for (size_t i = 0; i < children_array.size(); ++i) {
+            for (const auto &children_array = json_node["children"]; const auto & i : children_array) {
                 auto child_node = std::make_shared<PartitionTreeNode>();
-                parseJsonNode(children_array[i], child_node, global_knowledge, root_graph, depth + 1);
+                parseJsonNode(i, child_node, global_knowledge, root_graph, depth + 1);
                 node->children.push_back(child_node);
             }
         }

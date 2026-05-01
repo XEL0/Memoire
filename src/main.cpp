@@ -5,7 +5,7 @@
 #include "model/Algorithms.hpp"
 #include "model/Graph.hpp"
 #include "view/graphicsItems/DrawableGraph.hpp"
-#include "view/MainWindow.hpp"
+#include "view/windows/MainWindow.hpp"
 #include "model/PartitionTreeLoader.hpp"
 
 

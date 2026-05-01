@@ -1,7 +1,7 @@
 #include "StepsWindow.hpp"
-#include "graphicsItems/DrawableGraphNode.hpp"
-#include "graphicsItems/Arrow.hpp"
-#include "graphicsItems/TreeLayout.hpp"
+#include "../graphicsItems/DrawableGraphNode.hpp"
+#include "../graphicsItems/Arrow.hpp"
+#include "../graphicsItems/TreeLayout.hpp"
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QToolBar>

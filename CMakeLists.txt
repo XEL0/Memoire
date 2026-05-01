@@ -27,12 +27,12 @@ add_executable(${PROJECT_NAME}
         src/view/graphicsItems/Arrow.hpp
         src/view/graphicsItems/Arrow.cpp
         src/view/graphicsItems/TreeLayout.hpp
-        src/view/MainWindow.hpp
-        src/view/MainWindow.cpp
-        src/view/graphs/GraphWindow.hpp
-        src/view/graphs/GraphWindow.cpp
-        src/view/StepsWindow.hpp
-        src/view/StepsWindow.cpp
+        src/view/windows/MainWindow.hpp
+        src/view/windows/MainWindow.cpp
+        src/view/windows/GraphWindow.hpp
+        src/view/windows/GraphWindow.cpp
+        src/view/windows/StepsWindow.hpp
+        src/view/windows/StepsWindow.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

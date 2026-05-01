@@ -9,7 +9,7 @@
 #include <vector>
 #include <QGraphicsScene>
 
-#include "../model/PartitionTreeLoader.hpp"
+#include "../../model/PartitionTreeLoader.hpp"
 
 class DrawableComparabilityBigraphNode;
 

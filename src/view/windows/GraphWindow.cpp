@@ -9,7 +9,7 @@
 #include <QGraphicsView>
 
 #include "../graphicsItems/DrawableGraph.hpp"
-#include "../StepsWindow.hpp"
+#include "StepsWindow.hpp"
 #include "../../model/PartitionTreeLoader.hpp"
 #include "../../model/Algorithms.hpp"
 

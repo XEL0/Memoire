@@ -5,7 +5,7 @@
 #include <QRandomGenerator>
 
 #include "MainWindow.hpp"
-#include "graphs/GraphWindow.hpp"
+#include "GraphWindow.hpp"
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) { setupUI();}
 

@@ -185,13 +185,13 @@ QSpinBox* MainWindow::instantiateSpinBox(const QString &type) {
         "}"
 
         "QSpinBox::up-arrow {"
-        "  image: url(../assets/up_arrow.png);"
+        "  image: url(assets/up_arrow.png);"
         "  width: 10px;"
         "  height: 10px;"
         "}"
 
         "QSpinBox::down-arrow {"
-        "  image: url(../assets/down_arrow.png);"
+        "  image: url(assets/down_arrow.png);"
         "  width: 10px;"
         "  height: 10px;"
         "}"
@@ -210,11 +210,11 @@ QSpinBox* MainWindow::instantiateSpinBox(const QString &type) {
 
     if (type == "vertices") {
         spinBox->setMinimum(1);
-        spinBox->setMaximum(50);
+        spinBox->setMaximum(500);
         spinBox->setValue(5);
     } else {  // dimensions
         spinBox->setMinimum(0);
-        spinBox->setMaximum(5);
+        spinBox->setMaximum(20);
         spinBox->setValue(2);
     }
     return spinBox;
@@ -227,7 +227,7 @@ std::pair<QPushButton*, QSpinBox*> MainWindow::instantiateIntegerBox(const QStri
     connect(randomBtn, &QPushButton::clicked, [spinBox, type]() {
         int randomValue;
         if (type == "vertices") {
-            randomValue = QRandomGenerator::global()->bounded(1, 20);
+            randomValue = QRandomGenerator::global()->bounded(1, 100);
         } else {  // dimensions
             randomValue = QRandomGenerator::global()->bounded(1, 3);
         }
@@ -351,13 +351,12 @@ QMap<QString, QVariant> MainWindow::getFormParameters() const {
 
 void MainWindow::onGenerateClicked() {
     const auto params = getFormParameters();
-    int size = 900;
 
 
     QString graphType = params["graphType"].toString();
-    for (auto it = spinBoxes.begin(); it != spinBoxes.end(); ++it) {
+    /*for (auto it = spinBoxes.begin(); it != spinBoxes.end(); ++it) {
         std::cout << it.key().toStdString() << " : " << std::to_string(it.value()->value()) << std::endl;
-    }
+    }*/
 
 
     if (graphType == "Simple") {
@@ -396,7 +395,7 @@ void MainWindow::onGenerateClicked() {
         int vertices = params["Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityGraph>();
-        graph->generate(vertices, dimensions, 1000);
+        graph->generate(vertices, dimensions, vertices * 100);
         graph->constructE(true);
 
         auto drawableGraph = std::make_shared<DrawableComparabilityGraph>();
@@ -412,7 +411,7 @@ void MainWindow::onGenerateClicked() {
         int redVertices = params["Red Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
         const auto graph = std::make_shared<ComparabilityBigraph>();
-        graph->generate(blueVertices, redVertices, dimensions, 1000);
+        graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
         graph->constructE(true);
 
         /*std::vector<VertexPointer> V{

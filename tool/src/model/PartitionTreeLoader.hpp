@@ -29,6 +29,7 @@ struct PartitionTreeNode {
 struct GlobalKnowledge {
     std::unordered_map<unsigned, std::vector<unsigned>> embedding;
     std::unordered_map<unsigned, unsigned> coloring;
+    unsigned point_space_limit = -1;
 };
 
 class PartitionTreeLoader {
@@ -85,6 +86,10 @@ public:
                     global_knowledge->coloring[vertex] = colorValue;
                 }
             }
+
+            if (json_node.contains("point_space_limit")) {
+                global_knowledge->point_space_limit = std::stoi(json_node["point_space_limit"].get<std::string>());
+            }
         }
 
         unsigned p = 0, q = 0;
@@ -106,7 +111,7 @@ public:
         node->L = json_node.contains("L") ? json_node["L"].get<bool>() : node->L = std::nullopt;
 
         node->label = json_node.value("label", "unknown");
-        node->graph = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim, 1000);
+        node->graph = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim, global_knowledge->point_space_limit);
         node->graph->constructE(true);
 
         if (json_node.contains("children") and json_node["children"].is_array()) {

@@ -12,7 +12,7 @@ Bigraph::Bigraph() = default;
 Bigraph::Bigraph(std::vector<VertexPointer> vertices, const unsigned p, const unsigned q, std::vector<Edge> edges):
     Graph(std::move(vertices), std::move(edges)), p(p), q(q) {}
 
-ComparabilityGraph::ComparabilityGraph(): dim(0), point_space_limit(1000) {}
+ComparabilityGraph::ComparabilityGraph(): dim(0), point_space_limit(-1) {}
 ComparabilityGraph::ComparabilityGraph(
     std::vector<VertexPointer> vertices, const unsigned dim, const unsigned point_space_limit, std::vector<Edge> edges):
     Graph(std::move(vertices), std::move(edges)), dim(dim), point_space_limit(point_space_limit) {}
@@ -95,10 +95,14 @@ void ComparabilityBigraph::constructV(const unsigned p, const unsigned q) {
 
 void ComparabilityGraph::constructOrdering() {
     auto rg = RandomGenerator(0, point_space_limit);
-    for (const auto& v : enumerate()) {
-        const auto ev = std::dynamic_pointer_cast<EmbeddedVertex>(v);
-        for (unsigned d = 0; d < dim; d++) {
-            ev->embed(d, rg());
+    std::vector<unsigned> values(point_space_limit+1);
+    std::iota(values.begin(), values.end(), 0);
+
+    for (unsigned d = 0; d < dim; d++) {
+        std::ranges::shuffle(values, rg.getRNG());
+        for (unsigned i = 0; i < vertices.size(); i++) {
+            const auto ev = std::dynamic_pointer_cast<EmbeddedVertex>(vertices[i]);
+            ev->embed(d, values[i]);
         }
     }
 }

@@ -85,7 +85,7 @@ std::pair<float, float> DrawableComparabilityGraph::findRadiusAndWritingSize() c
 
 std::pair<float, float> DrawableComparabilityBigraph::findRadiusAndWritingSize() const {
     const auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);
-    if (graph->getDimension() != 0) return DrawableGraph::findRadiusAndWritingSize();
+    if (graph->getDimension() != 0) return DrawableComparabilityGraph::findRadiusAndWritingSize();
 
     const unsigned p = graph->V1_size();
     const unsigned q = graph->V2_size();
@@ -93,7 +93,7 @@ std::pair<float, float> DrawableComparabilityBigraph::findRadiusAndWritingSize()
 
     const double zone_size_p = (p > 0) ? height / static_cast<double>(p) : height;
     const double zone_size_q = (q > 0) ? height / static_cast<double>(q) : height;
-    const double max_radius_virtual = std::min(zone_size_p / 4.0, zone_size_q / 4.0);
+    const double max_radius_virtual = std::min(zone_size_p / 4.0, zone_size_q / 4.0); //todo strange size with big graph
     const double radius_virtual = std::min(100.0, max_radius_virtual);
 
     const double m = minSize();
@@ -108,8 +108,8 @@ std::pair<float, float> DrawableComparabilityBigraph::findRadiusAndWritingSize()
 }
 
 void DrawableGraph::embed() {
-    auto rg = RandomGenerator(0, 1000);
-    this->point_space_bound = {0, 1000};
+    auto rg = RandomGenerator(0, G->size() * 100);
+    this->point_space_bound = {0, G->size() * 100};
 
     for (auto& v : G->enumerate()) {
         this->vertices[v->getId()] = {

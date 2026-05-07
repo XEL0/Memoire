@@ -9,13 +9,10 @@ BicliquePartitioner::BicliquePartitioner() = default;
 
 double BicliquePartitioner::findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) {
     const std::size_t n = (G->size() - 1) / 2;
-    // Use std::nth_element instead of std::ranges::nth_element to avoid recursive implementation
-    std::nth_element(G->vertices.begin(),
-                     G->vertices.begin() + static_cast<std::ptrdiff_t>(n),
-                     G->vertices.end(),
-                     [dim, G](const VertexPointer& a, const VertexPointer& b) {
-                         return G->getEmbeddingAt(a, dim) < G->getEmbeddingAt(b, dim);
-                     });
+    std::ranges::nth_element(G->vertices, G->vertices.begin() + static_cast<std::ptrdiff_t>(n),
+                             [dim, G](const VertexPointer& a, const VertexPointer& b) {
+                                 return G->getEmbeddingAt(a, dim) < G->getEmbeddingAt(b, dim);
+                             });
     const auto at = G->vertices.begin() + static_cast<std::ptrdiff_t>(n);
     return G->getEmbeddingAt(*at, dim);
 }
@@ -56,6 +53,7 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
     }
     tree["coloring"] = coloring;
     tree["embedding"] = embedding;
+    tree["point_space_limit"] = std::to_string(G->getPointSpaceLimit());
     auto res = partition_save(G, optimize_size, tree);
     std::ofstream f("partition_tree.json");
     f << tree.dump(2);

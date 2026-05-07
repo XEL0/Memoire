@@ -31,16 +31,18 @@ add_executable(Tool
         src/view/windows/StepsWindow.cpp
 )
 
-target_link_libraries(Tool
-        PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui
-)
-
+include(FetchContent)
 find_package(nlohmann_json 3.2.0 QUIET)
 
-if(nlohmann_json_FOUND)
-    target_link_libraries(Tool PRIVATE nlohmann_json::nlohmann_json)
-else()
-    message(STATUS "nlohmann_json not found : use 'brew install nlohmann-json' to download the library")
+if(NOT nlohmann_json_FOUND)
+    FetchContent_Declare(
+            json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v3.2.0
+            GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(json)
+
 endif()
 
 add_custom_command(TARGET Tool POST_BUILD
@@ -48,4 +50,11 @@ add_custom_command(TARGET Tool POST_BUILD
         ${CMAKE_CURRENT_SOURCE_DIR}/assets
         $<TARGET_FILE_DIR:Tool>/assets
         COMMENT "Copying assets to build directory"
+)
+
+target_link_libraries(Tool PRIVATE
+        Qt6::Widgets
+        Qt6::Core
+        Qt6::Gui
+        nlohmann_json::nlohmann_json
 )

@@ -298,8 +298,7 @@ void ComparabilityBigraphWindow::onComputeBicliqueCoverClicked() {
     auto g = std::dynamic_pointer_cast<ComparabilityBigraph>(graph);
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
-    BicliquePartitioner partitioner = BicliquePartitioner();
-    auto p = partitioner.partition(g, optimize);
+    auto p = BicliquePartitioner::partition(g, optimize);
     appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
     for (const auto& G: p) {
         auto blue = std::vector<QString>();

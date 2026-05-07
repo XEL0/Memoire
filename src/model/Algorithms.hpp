@@ -9,23 +9,18 @@ class Algorithms {
 
 class BicliquePartitioner : public Algorithms {
 protected:
-    [[nodiscard]] double findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) const;
-    [[nodiscard]] double adjustHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, double hyperplane) const;
-    [[nodiscard]] bool areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph> &G) const;
+    [[nodiscard]] static double findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) ;
+    [[nodiscard]] static double adjustHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, double hyperplane) ;
+    [[nodiscard]]  static bool areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph> &G) ;
 
-    [[nodiscard]] std::vector<std::shared_ptr<ComparabilityBigraph>> partition_light(
-    const std::shared_ptr<ComparabilityBigraph>& G, bool optimize_size) const;
-
-    [[nodiscard]] std::vector<std::shared_ptr<ComparabilityBigraph>> partition_save(
-        const std::shared_ptr<ComparabilityBigraph>& G, bool optimize_size, json& node) const;
+    [[nodiscard]] static std::vector<std::shared_ptr<ComparabilityBigraph>> partition_save(
+        const std::shared_ptr<ComparabilityBigraph>& G, bool optimize_size, json& node);
 public:
     explicit BicliquePartitioner();
 
-
-    [[nodiscard]] std::vector<std::shared_ptr<ComparabilityBigraph>> partition(
+    [[nodiscard]] static std::vector<std::shared_ptr<ComparabilityBigraph>> partition(
         const std::shared_ptr<ComparabilityBigraph>& G,
-        bool optimize_size,
-        bool render=true) const;
+        bool optimize_size);
 
 };
 

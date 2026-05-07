@@ -210,11 +210,11 @@ QSpinBox* MainWindow::instantiateSpinBox(const QString &type) {
 
     if (type == "vertices") {
         spinBox->setMinimum(1);
-        spinBox->setMaximum(99999);
+        spinBox->setMaximum(50);
         spinBox->setValue(5);
     } else {  // dimensions
         spinBox->setMinimum(0);
-        spinBox->setMaximum(20);
+        spinBox->setMaximum(5);
         spinBox->setValue(2);
     }
     return spinBox;
@@ -227,9 +227,9 @@ std::pair<QPushButton*, QSpinBox*> MainWindow::instantiateIntegerBox(const QStri
     connect(randomBtn, &QPushButton::clicked, [spinBox, type]() {
         int randomValue;
         if (type == "vertices") {
-            randomValue = QRandomGenerator::global()->bounded(1, 100);
-        } else {  // dimensions
             randomValue = QRandomGenerator::global()->bounded(1, 20);
+        } else {  // dimensions
+            randomValue = QRandomGenerator::global()->bounded(1, 3);
         }
         spinBox->setValue(randomValue);
     });

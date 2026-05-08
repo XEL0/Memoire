@@ -1,11 +1,13 @@
 #include "algorithms.hpp"
 
+#include <deque>
 #include <iostream>
+#include <unordered_map>
 
-#include "Graph.hpp"
+#include "ComparabilityBigraph.hpp"
 
 
-double Algorithms::findHyperplane(const std::shared_ptr<Graph>& G, unsigned dim) {
+double Algorithms::findHyperplane(const std::shared_ptr<ComparabilityBigraph>& G, unsigned dim) {
     const std::size_t n = (G->size() - 1) / 2;
     std::vector<Vertex*> sorted_vertices = G->vertices;
 
@@ -18,13 +20,13 @@ double Algorithms::findHyperplane(const std::shared_ptr<Graph>& G, unsigned dim)
 }
 
 
-std::vector<std::shared_ptr<Graph>> Algorithms::partition(
-    const std::shared_ptr<Graph>& G, const bool optimize_size,
+std::vector<std::shared_ptr<ComparabilityBigraph>> Algorithms::partition(
+    const std::shared_ptr<ComparabilityBigraph>& G, const bool optimize_size,
     int depth, const std::string& origin) {
 
     if (G->size() <= 1) return {};
     if (G->getDimension() == 0) return std::vector{G};
-    //if (optimize_size and G->isPseudoBiclique()) return {G};
+    if (optimize_size and G->isComplete()) return {G};
 
     const double H = findHyperplane(G, G->getDimension()-1);
 
@@ -59,26 +61,95 @@ std::vector<std::shared_ptr<Graph>> Algorithms::partition(
         }
     }
 
-    auto res = std::vector<std::shared_ptr<Graph>>{};
+    auto res = std::vector<std::shared_ptr<ComparabilityBigraph>>{};
 
     if (nb_v1_under and nb_v2_over) {
-        const auto flattened_CG = std::make_shared<Graph>(
+        const auto flattened_CG = std::make_shared<ComparabilityBigraph>(
             V_prime, nb_v1_under, nb_v2_over, G->getDimension()-1);
         res = partition(flattened_CG, optimize_size, depth + 1, "FL");
     }
 
     if (nb_v1_under and nb_v2_under) {
-        const auto under_H_CG = std::make_shared<Graph>(
+        const auto under_H_CG = std::make_shared<ComparabilityBigraph>(
             V_under_H, nb_v1_under, nb_v2_under, G->getDimension());
         const auto part2 = partition(under_H_CG, optimize_size, depth + 1, "L");
         res.insert(res.end(), part2.begin(), part2.end());
     }
 
     if (nb_v1_over and nb_v2_over) {
-        const auto over_H_CG = std::make_shared<Graph>(
+        const auto over_H_CG = std::make_shared<ComparabilityBigraph>(
             V_over_H, nb_v1_over, nb_v2_over, G->getDimension());
         const auto part3 = partition(over_H_CG, optimize_size, depth + 1, "U");
         res.insert(res.end(), part3.begin(), part3.end());
     }
     return res;
+}
+
+std::vector<const Biclique*> Algorithms::bfs(const GraphOfBicliques& graph, const unsigned u, const unsigned v) {
+    if (u == v) return {};
+    std::deque<const Biclique*> bfs_queue;
+    std::unordered_set<const Biclique*> visited = {};
+    std::unordered_map<const Biclique*, std::vector<std::pair<const Biclique*, int>>> parents = {};
+    unsigned color;
+    unsigned depth = 0;
+    for (const Biclique& biclique : graph.bicliques) {
+        if (biclique.contains(u)) {
+            color = biclique.containsP(u) ? 0 : 1;
+            bfs_queue.push_back(&biclique);
+            parents[&biclique].emplace_back(nullptr, -1);
+            if (color == 0 and biclique.p() > 1 or color == 1 and biclique.q() > 1) continue;
+            visited.insert(&biclique);
+        }
+    }
+    if (bfs_queue.empty()) return {};
+
+    unsigned depth_size = bfs_queue.size();
+    while (not bfs_queue.empty() and not bfs_queue.front()->contains(v)) {
+        const Biclique* current = bfs_queue.front();
+        bfs_queue.pop_front();
+
+        if (color == 0) {
+            for (const auto q : current->getV2()) {
+                for (const Biclique& biclique : graph.bicliques) {
+                    if (biclique.containsQ(q) and not visited.contains(&biclique)) {
+                        bfs_queue.push_back(&biclique);
+                        visited.insert(&biclique);
+                        parents[&biclique].emplace_back(current, depth);
+                    }
+                }
+            }
+        } else {
+            for (const auto p : current->getV1()) {
+                for (const Biclique& biclique : graph.bicliques) {
+                    if (biclique.containsP(p) and not visited.contains(&biclique)) {
+                        bfs_queue.push_back(&biclique);
+                        visited.insert(&biclique);
+                        parents[&biclique].emplace_back(current, depth);
+                    }
+                }
+            }
+        }
+        depth_size -= 1;
+        if (depth_size == 0) {
+            depth += 1;
+            depth_size = bfs_queue.size();
+            color = !color;
+        }
+    }
+    if (bfs_queue.empty()) return {};
+
+    std::vector<const Biclique*> path;
+    const Biclique* end = bfs_queue.front();
+    path.push_back(end);
+    while (end != nullptr) {
+        auto x = parents[end];
+        auto prev = std::ranges::find_if(x, [&](const auto& e) { return e.second == depth-1; })->first;
+        if (prev == nullptr) break;
+        path.push_back(prev);
+        end = prev;
+        depth -= 1;
+    }
+    std::ranges::reverse(path);
+
+    return path;
 }

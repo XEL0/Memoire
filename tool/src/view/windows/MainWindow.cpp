@@ -410,9 +410,9 @@ void MainWindow::onGenerateClicked() {
         int blueVertices = params["Blue Vertices"].toInt();
         int redVertices = params["Red Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
-        const auto graph = std::make_shared<ComparabilityBigraph>();
-        graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
-        graph->constructE(true);
+        //const auto graph = std::make_shared<ComparabilityBigraph>();
+        //graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
+        //graph->constructE(true);
 
         /*std::vector<VertexPointer> V{
             std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),
@@ -427,6 +427,51 @@ void MainWindow::onGenerateClicked() {
             std::make_shared<ColoredEmbeddedVertex>(9, 1, std::vector<unsigned>{831, 118}),
         };
         auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);*/
+
+        std::vector<VertexPointer> V{
+	        std::make_shared<ColoredEmbeddedVertex>(36, 0, std::vector<unsigned>{20, 31}),
+	        std::make_shared<ColoredEmbeddedVertex>(0, 0, std::vector<unsigned>{5, 5}),
+	        std::make_shared<ColoredEmbeddedVertex>(34, 0, std::vector<unsigned>{0, 23}),
+	        std::make_shared<ColoredEmbeddedVertex>(33, 0, std::vector<unsigned>{8, 29}),
+	        std::make_shared<ColoredEmbeddedVertex>(35, 0, std::vector<unsigned>{33, 21}),
+	        std::make_shared<ColoredEmbeddedVertex>(37, 0, std::vector<unsigned>{22, 25}),
+	        std::make_shared<ColoredEmbeddedVertex>(38, 0, std::vector<unsigned>{27, 12}),
+	        std::make_shared<ColoredEmbeddedVertex>(10, 0, std::vector<unsigned>{25, 14}),
+	        std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{18, 36}),
+	        std::make_shared<ColoredEmbeddedVertex>(31, 0, std::vector<unsigned>{31, 4}),
+	        std::make_shared<ColoredEmbeddedVertex>(29, 0, std::vector<unsigned>{39, 28}),
+	        std::make_shared<ColoredEmbeddedVertex>(6, 0, std::vector<unsigned>{15, 19}),
+	        std::make_shared<ColoredEmbeddedVertex>(24, 0, std::vector<unsigned>{36, 1}),
+	        std::make_shared<ColoredEmbeddedVertex>(25, 0, std::vector<unsigned>{9, 24}),
+	        std::make_shared<ColoredEmbeddedVertex>(19, 0, std::vector<unsigned>{28, 3}),
+	        std::make_shared<ColoredEmbeddedVertex>(13, 0, std::vector<unsigned>{40, 22}),
+	        std::make_shared<ColoredEmbeddedVertex>(20, 0, std::vector<unsigned>{17, 26}),
+	        std::make_shared<ColoredEmbeddedVertex>(28, 0, std::vector<unsigned>{24, 0}),
+	        std::make_shared<ColoredEmbeddedVertex>(17, 0, std::vector<unsigned>{21, 32}),
+	        std::make_shared<ColoredEmbeddedVertex>(12, 0, std::vector<unsigned>{30, 39}),
+	        std::make_shared<ColoredEmbeddedVertex>(14, 1, std::vector<unsigned>{2, 38}),
+	        std::make_shared<ColoredEmbeddedVertex>(8, 1, std::vector<unsigned>{32, 15}),
+	        std::make_shared<ColoredEmbeddedVertex>(15, 1, std::vector<unsigned>{26, 40}),
+	        std::make_shared<ColoredEmbeddedVertex>(26, 1, std::vector<unsigned>{1, 35}),
+	        std::make_shared<ColoredEmbeddedVertex>(39, 1, std::vector<unsigned>{37, 37}),
+	        std::make_shared<ColoredEmbeddedVertex>(9, 1, std::vector<unsigned>{10, 16}),
+	        std::make_shared<ColoredEmbeddedVertex>(7, 1, std::vector<unsigned>{34, 11}),
+	        std::make_shared<ColoredEmbeddedVertex>(11, 1, std::vector<unsigned>{35, 13}),
+	        std::make_shared<ColoredEmbeddedVertex>(3, 1, std::vector<unsigned>{6, 2}),
+	        std::make_shared<ColoredEmbeddedVertex>(16, 1, std::vector<unsigned>{13, 27}),
+	        std::make_shared<ColoredEmbeddedVertex>(30, 1, std::vector<unsigned>{16, 30}),
+	        std::make_shared<ColoredEmbeddedVertex>(27, 1, std::vector<unsigned>{38, 6}),
+	        std::make_shared<ColoredEmbeddedVertex>(18, 1, std::vector<unsigned>{11, 8}),
+	        std::make_shared<ColoredEmbeddedVertex>(23, 1, std::vector<unsigned>{3, 18}),
+	        std::make_shared<ColoredEmbeddedVertex>(5, 1, std::vector<unsigned>{19, 17}),
+	        std::make_shared<ColoredEmbeddedVertex>(32, 1, std::vector<unsigned>{23, 33}),
+	        std::make_shared<ColoredEmbeddedVertex>(2, 1, std::vector<unsigned>{4, 9}),
+	        std::make_shared<ColoredEmbeddedVertex>(22, 1, std::vector<unsigned>{29, 10}),
+	        std::make_shared<ColoredEmbeddedVertex>(21, 1, std::vector<unsigned>{14, 20}),
+	        std::make_shared<ColoredEmbeddedVertex>(4, 1, std::vector<unsigned>{7, 7}),
+        };
+        auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 20, 20, 2, 40);
+        graph->constructE(true);
 
         auto drawableGraph = std::make_shared<DrawableComparabilityBigraph>();
         drawableGraph->linkGraph(graph);

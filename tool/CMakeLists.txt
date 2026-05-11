@@ -32,13 +32,13 @@ add_executable(Tool
 )
 
 include(FetchContent)
-find_package(nlohmann_json 3.2.0 QUIET)
+find_package(nlohmann_json 3.11.3 QUIET)
 
 if(NOT nlohmann_json_FOUND)
     FetchContent_Declare(
             json
             GIT_REPOSITORY https://github.com/nlohmann/json.git
-            GIT_TAG v3.2.0
+            GIT_TAG v3.11.3
             GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(json)

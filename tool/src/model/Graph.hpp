@@ -137,7 +137,7 @@ protected:
     unsigned point_space_limit;
     [[nodiscard]] bool comparable(const VertexPointer &u, const VertexPointer &v) const override;
 
-    void constructV(unsigned size) override;
+    virtual void constructV(unsigned size) override;
 
     virtual void constructOrdering();
 public:
@@ -161,6 +161,7 @@ class ComparabilityBigraph : virtual public Bigraph, virtual public Comparabilit
 protected:
     [[nodiscard]] bool comparable(const VertexPointer &u, const VertexPointer &v) const override;
     void constructV(unsigned p, unsigned q) override;
+    void constructOrdering() override;
 public:
     ComparabilityBigraph();
     explicit ComparabilityBigraph(std::vector<VertexPointer> vertices, unsigned p, unsigned q, unsigned dim, unsigned point_space_limit, std::vector<Edge> edges = {});

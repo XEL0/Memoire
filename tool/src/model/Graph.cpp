@@ -132,15 +132,9 @@ void ComparabilityGraph::constructV(const unsigned size) {
 void ComparabilityBigraph::constructV(const unsigned p, const unsigned q) {
     const unsigned size = p + q;
     vertices.reserve(size);
-    auto rg = RandomGenerator(0, size);
-    std::vector<unsigned> ids(size);
-    std::iota(ids.begin(), ids.end(), 0);
-    std::ranges::shuffle(ids, rg.getRNG());
-    int i = 0;
-    for (auto id : ids) {
+    for (int i = 0; i < size; i++) {
         int color = (i < p) ? 0 : 1;
-        vertices.push_back(std::make_shared<ColoredEmbeddedVertex>(id, color, std::vector<unsigned>(dim)));
-        i++;
+        vertices.push_back(std::make_shared<ColoredEmbeddedVertex>(i, color, std::vector<unsigned>(dim)));
     }
 }
 
@@ -156,6 +150,27 @@ void ComparabilityGraph::constructOrdering() {
 
     for (unsigned d = 0; d < dim; d++) {
         std::ranges::shuffle(values, rg.getRNG());
+        for (unsigned i = 0; i < vertices.size(); i++) {
+            const auto ev = std::dynamic_pointer_cast<EmbeddedVertex>(vertices[i]);
+            ev->embed(d, values[i]);
+        }
+    }
+}
+
+void ComparabilityBigraph::constructOrdering() {
+    auto rg = RandomGenerator(0, point_space_limit);
+    std::vector<unsigned> values(point_space_limit+1);
+    std::iota(values.begin(), values.end(), 0);
+
+    for (unsigned d = 0; d < dim; d++) {
+        std::ranges::shuffle(values, rg.getRNG());
+        if (d == 0) {
+            std::sort(values.begin(), values.begin() + p);
+        }
+        if (d == 1) {
+            std::sort(values.begin() + p, values.begin() + p + q);
+        }
+
         for (unsigned i = 0; i < vertices.size(); i++) {
             const auto ev = std::dynamic_pointer_cast<EmbeddedVertex>(vertices[i]);
             ev->embed(d, values[i]);

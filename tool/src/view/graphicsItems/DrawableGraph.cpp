@@ -22,7 +22,7 @@ void DrawableGraph::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     painter->fillRect(QRectF(0, 0, scene_width, scene_height), backgroundColor);
     this->backgroundPaint(painter);
     this->drawEdges(painter);
-    this->drawVertices(painter);
+    this->drawVertices(painter, vertices);
     this->foregroundPaint(painter);
 }
 
@@ -43,6 +43,11 @@ void DrawableGraph::linkGraph(const std::shared_ptr<Graph>& G) {
     update();
 }
 
+void DrawableTerrainVisibilityGraph::linkGraphs(const std::shared_ptr<Graph>& G, const std::shared_ptr<Terrain>& terrain) {
+    this->terrain = terrain;
+    this->linkGraph(G);
+}
+
 void DrawableGraph::drawEdges(QPainter* painter) const {
     painter->setPen(QPen(Qt::black, 1));
     for (const auto& [u, v] : G->enumerate_edges()) {
@@ -52,10 +57,10 @@ void DrawableGraph::drawEdges(QPainter* painter) const {
     }
 }
 
-void DrawableGraph::drawVertices(QPainter* painter) const {
+void DrawableGraph::drawVertices(QPainter* painter, const std::unordered_map<unsigned, DrawableVertex>& V) const {
     const auto [radius, writing_size] = findRadiusAndWritingSize();
 
-    for (const auto& [v, dv] : this->vertices) {
+    for (const auto& [v, dv] : V) {
         const auto& p = remap(dv.position);
         const auto& color = dv.color;
 
@@ -71,6 +76,10 @@ void DrawableGraph::drawVertices(QPainter* painter) const {
         painter->setFont(font);
         painter->drawText(textRect, Qt::AlignCenter, QString::number(v));
     }
+}
+
+void DrawableTerrainVisibilityGraph::drawVertices(QPainter* painter, const std::unordered_map<unsigned, DrawableVertex>& V) const {
+    DrawableGraph::drawVertices(painter, draw_in_terrain_order ? terrain_ordered_vertices : V);
 }
 
 std::pair<float, float> DrawableGraph::findRadiusAndWritingSize() const {
@@ -272,5 +281,37 @@ void DrawableComparabilityBigraph::embedIn0D() {
             this->vertices[v->getId()] = {QPointF(3.0 * height / 4.0, y), getColor(v)};
             q_count++;
         }
+    }
+}
+
+
+void DrawableTerrainVisibilityGraph::embed() {
+    this->point_space_bound = {0, terrain->getPointSpaceLimit()};
+
+    for (auto& v : terrain->enumerate()) {
+        const unsigned x = terrain->getEmbeddingAt(v, 0);
+        const unsigned y = terrain->getEmbeddingAt(v, 1);
+
+        this->terrain_ordered_vertices[v->getId()] = {
+            QPointF(x, y),
+            getColor(v)
+        };
+    }
+
+    DrawableGraph::embed();
+}
+
+
+void DrawableTerrainVisibilityGraph::drawEdges(QPainter* painter) const {
+    if (draw_in_terrain_order) {
+        for (const auto& [u, v] : G->enumerate_edges()) {
+            isTerrainEdge(u->getId(), v->getId()) ? painter->setPen(QPen(Qt::black, 3)) : painter->setPen(QPen(Qt::black, 1));
+            const auto [position_u, color_u] = this->terrain_ordered_vertices.at(u->getId());
+            const auto [position_v, color_v] = this->terrain_ordered_vertices.at(v->getId());
+            painter->drawLine(remap(position_u), remap(position_v));
+        }
+    }
+    else {
+        DrawableGraph::drawEdges(painter);
     }
 }

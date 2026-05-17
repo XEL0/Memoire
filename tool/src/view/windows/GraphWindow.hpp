@@ -89,4 +89,33 @@ protected:
     bool optimize{};
 };
 
+
+
+class TerrainWindow : public GraphWindow {
+    Q_OBJECT
+public:
+    TerrainWindow(QMainWindow *creator, const std::shared_ptr<DrawableTerrainVisibilityGraph>& drawable,
+        const std::shared_ptr<TerrainVisibilityGraph>& visibilityGraph, const std::shared_ptr<Terrain>& terrain);
+    ~TerrainWindow() override;
+
+protected slots:
+    void onToggleViewClicked();
+    void onComputeBicliqueCoverClicked();
+
+protected:
+    void setupButtons(QGridLayout *grid_layout) override;
+    void setupToggleView(QGridLayout *grid_layout);
+    void setupComputeBicliqueCover(QGridLayout *grid_layout);
+    void updateView();
+    
+    std::shared_ptr<DrawableTerrainVisibilityGraph> drawableVisibilityGraph;
+    std::shared_ptr<TerrainVisibilityGraph> visibilityGraph;
+    std::shared_ptr<Terrain> terrain;
+
+    QPushButton *toggleViewBtn{};
+    QPushButton *computeBicliqueCoverBtn{};
+
+    bool showingTerrain = false;
+};
+
 #endif // MEMOIRE_GRAPHWINDOW_HPP

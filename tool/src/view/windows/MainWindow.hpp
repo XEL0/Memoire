@@ -55,19 +55,24 @@ private:
 
     QMap<QString, GraphOptions> graphConfigs = {
         {"Simple", {
-                {"Vertices", "Complete"},
-                {"vertices", "toggle"}}},
-            {"Bipartite", {
-                {"Blue Vertices", "Red Vertices", "Complete"},
-                {"vertices", "vertices", "toggle"}}},
-            {"Comparability", {
-                {"Vertices", "Dimensions"},
-                {"vertices", "dimensions"}}},
-            {"Bicomparability", {
-                {"Blue Vertices", "Red Vertices", "Dimensions"},
-                {"vertices", "vertices", "dimensions"}}}
+            {"Vertices", "Complete"},
+            {"vertices", "toggle"}}},
+        {"Bipartite", {
+            {"Blue Vertices", "Red Vertices", "Complete"},
+            {"vertices", "vertices", "toggle"}}},
+        {"Comparability", {
+            {"Vertices", "Dimensions"},
+            {"vertices", "dimensions"}}},
+        {"Bicomparability", {
+            {"Blue Vertices", "Red Vertices", "Dimensions"},
+            {"vertices", "vertices", "dimensions"}}},
+        {"Terrain Visibility", {
+            {"Vertices"},
+            {"vertices"}
+        }}
     };
 
+    QStringList graphTypes = {"Simple", "Bipartite", "Comparability", "Bicomparability", "Terrain Visibility"};
 };
 
 #endif // MEMOIRE_MAINWINDOW_HPP

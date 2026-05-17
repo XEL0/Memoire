@@ -33,7 +33,7 @@ protected:
     [[nodiscard]] virtual int minSize() const;
     [[nodiscard]] virtual QColor getColor(const VertexPointer& v) const;
     virtual void drawEdges(QPainter* painter) const;
-    virtual void drawVertices(QPainter* painter) const;
+    virtual void drawVertices(QPainter* painter, const std::unordered_map<unsigned, DrawableVertex>& V) const;
     virtual std::pair<float, float> findRadiusAndWritingSize() const;
     virtual void backgroundPaint(QPainter* painter);
     virtual void foregroundPaint(QPainter* painter);
@@ -87,7 +87,7 @@ public:
 
 class DrawableComparabilityBigraph : public DrawableComparabilityGraph {
 protected:
-    std::pair<float, float> findRadiusAndWritingSize() const override;
+    [[nodiscard]] std::pair<float, float> findRadiusAndWritingSize() const override;
     [[nodiscard]] QColor getColor(const VertexPointer& v) const override;
     [[nodiscard]] bool canCompareFrom(const VertexPointer& v) const override;
     void embedIn0D() override;
@@ -95,6 +95,25 @@ protected:
 public:
     using DrawableComparabilityGraph::DrawableComparabilityGraph;
     ~DrawableComparabilityBigraph() override = default;
+};
+
+
+class DrawableTerrainVisibilityGraph : public DrawableGraph {
+protected:
+    bool draw_in_terrain_order = false;
+    void embed() override;
+    void drawVertices(QPainter* painter, const std::unordered_map<unsigned, DrawableVertex>& V) const override;
+    void drawEdges(QPainter* painter) const override;
+    [[nodiscard]] bool isTerrainEdge(const unsigned id1, const unsigned id2) const { return (id1 + 1 == id2) or (id2 + 1 == id1);}
+    std::shared_ptr<Terrain> terrain;
+    std::unordered_map<unsigned, DrawableVertex> terrain_ordered_vertices;
+
+public:
+    using DrawableGraph::DrawableGraph;
+    ~DrawableTerrainVisibilityGraph() override = default;
+    void linkGraphs(const std::shared_ptr<Graph>& G, const std::shared_ptr<Terrain>& terrain);
+    void drawAsTerrain(const bool mode) { draw_in_terrain_order = mode; }
+    [[nodiscard]] bool isDrawAsTerrain() const { return draw_in_terrain_order; }
 };
 
 #endif //MEMOIRE_DRAWABLEGRAPH_HPP

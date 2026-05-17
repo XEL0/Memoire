@@ -356,3 +356,88 @@ void GraphWindow::onReShowMainWindow() {
     }
     is_creator_displayed = not is_creator_displayed;
 }
+
+
+
+TerrainWindow::TerrainWindow(QMainWindow *creator, const std::shared_ptr<DrawableTerrainVisibilityGraph>& drawable,
+        const std::shared_ptr<TerrainVisibilityGraph>& visibilityGraph, const std::shared_ptr<Terrain>& terrain):
+    GraphWindow(creator, drawable, visibilityGraph), drawableVisibilityGraph(drawable), visibilityGraph(visibilityGraph), terrain(terrain)
+{
+    graph = visibilityGraph;
+    title = "Terrain Visibility Graph of " + QString::number(visibilityGraph->size()) + " vertices";
+    window_title = "TVG" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
+    setupUI();
+}
+
+TerrainWindow::~TerrainWindow() = default;
+
+void TerrainWindow::setupButtons(QGridLayout* grid_layout) {
+    setupToggleView(grid_layout);
+    setupComputeBicliqueCover(grid_layout);
+}
+
+void TerrainWindow::setupToggleView(QGridLayout* grid_layout) {
+    toggleViewBtn = new QPushButton("Show VG as Terrain");
+    toggleViewBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: white; "
+        "  color: black; "
+        "  border: 1px solid #CCCCCC; "
+        "  padding: 10px; "
+        "  border-radius: 4px; "
+        "  font-size: 13px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #F5F5F5;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #E8E8E8;"
+        "}"
+    );
+    toggleViewBtn->setMinimumHeight(40);
+    grid_layout->addWidget(toggleViewBtn, 0, 0, 1, 1);
+    connect(toggleViewBtn, &QPushButton::clicked, this, &TerrainWindow::onToggleViewClicked);
+}
+
+void TerrainWindow::setupComputeBicliqueCover(QGridLayout* grid_layout) {
+    computeBicliqueCoverBtn = new QPushButton("Compute biclique cover");
+    computeBicliqueCoverBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: white; "
+        "  color: black; "
+        "  border: 1px solid #CCCCCC; "
+        "  padding: 10px; "
+        "  border-radius: 4px; "
+        "  font-size: 13px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #F5F5F5;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #E8E8E8;"
+        "}"
+    );
+    computeBicliqueCoverBtn->setMinimumHeight(40);
+    grid_layout->addWidget(computeBicliqueCoverBtn, 0, 1, 1, 2);
+
+    connect(computeBicliqueCoverBtn, &QPushButton::clicked, this, &TerrainWindow::onComputeBicliqueCoverClicked);
+}
+
+void TerrainWindow::onToggleViewClicked() {
+    updateView();
+}
+
+void TerrainWindow::onComputeBicliqueCoverClicked() {
+    appendOutput(">>> Biclique Cover computation for Terrain Visibility Graphs");
+    appendOutput(">>> Not yet implemented - requires bipartite decomposition");
+}
+
+void TerrainWindow::updateView() {
+    showingTerrain = not showingTerrain;
+    toggleViewBtn->setText(showingTerrain ? "Non-ordered Display": "Display As Terrain");
+    drawableVisibilityGraph->drawAsTerrain(showingTerrain);
+    const QSize viewSize = graphicsView->viewport()->size();
+    drawable->setSceneDimensions(viewSize.width(), viewSize.height());
+    graphicsScene->setSceneRect(drawable->boundingRect());
+    graphicsScene->update();
+}

@@ -171,6 +171,46 @@ public:
 };
 
 
+class Terrain : public Graph {
+    friend std::ostream& operator<<(std::ostream& os, const Terrain& t);
+protected:
+    unsigned point_space_limit;
+
+    void constructV(unsigned n) override;
+    void constructOrdering() const;
+
+public:
+    Terrain();
+    explicit Terrain(std::vector<VertexPointer> vertices, unsigned point_space_limit, std::vector<Edge> edges = {});
+    ~Terrain() override = default;
+
+    void generate(unsigned n, unsigned point_space_limit);
+    [[nodiscard]] virtual unsigned getEmbeddingAt(const VertexPointer& v, const unsigned d) const {
+        return dynamic_cast<EmbeddedVertex*>(v.get())->at(d);
+    }
+    [[nodiscard]] virtual unsigned getPointSpaceLimit() const { return point_space_limit; }
+    void constructE(bool complete) override;
+};
+
+
+class TerrainVisibilityGraph : public Graph {
+protected:
+    static double orientation(double px, double py, double qx, double qy, double rx, double ry);
+public:
+    TerrainVisibilityGraph();
+    explicit TerrainVisibilityGraph(std::vector<VertexPointer> vertices, std::vector<Edge> edges = {});
+    ~TerrainVisibilityGraph() override = default;
+    void generateFromTerrain(const Terrain& terrain);
+};
+
+
+inline std::ostream& operator<<(std::ostream& os, const Terrain& t) {
+    os << "V: ";
+    for (const auto& v : t.enumerate()) {
+        os << v->getId() << "(" << t.getEmbeddingAt(v, 0) << "," << t.getEmbeddingAt(v, 1) << ") ";
+    }
+    return os;
+}
 
 
 inline std::ostream &operator<<(std::ostream &os, const Graph &g) {
@@ -187,6 +227,7 @@ inline std::ostream& operator<<(std::ostream& os, const Bigraph& g) {
     }
     return os;
 }
+
 
 inline std::ostream& operator<<(std::ostream& os, const ComparabilityGraph& g) {
     os << "V: ";

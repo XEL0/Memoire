@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <unordered_set>
 #include <iostream>
 
 BicliquePartitioner::BicliquePartitioner() = default;
@@ -162,4 +163,140 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> BicliquePartitioner::partitio
 
 bool BicliquePartitioner::areAllV1LessThanV2(const std::shared_ptr<ComparabilityBigraph>& G) {
     return G->isComplete(); //todo find first blue and last red; check completeness in between
+}
+
+
+
+
+
+std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::decompose(
+    const std::shared_ptr<TerrainVisibilityGraph>& G) {
+    return decomposeRecursive(G);
+}
+
+std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::decomposeRecursive(
+    const std::shared_ptr<TerrainVisibilityGraph>& G) {
+
+    const unsigned n = G->size();
+
+    if (n <= 1) return {};
+
+    const unsigned half = n / 2;
+    std::vector<VertexPointer> V1;
+    std::vector<VertexPointer> V2;
+    V1.reserve(half);
+    V2.reserve(n - half);
+
+    unsigned idx = 0;
+    for (const auto& v : G->enumerate()) {
+        idx < half ? V1.push_back(v) : V2.push_back(v);
+        idx++;
+    }
+
+    std::vector<Edge> edges_H;
+    for (const auto& edge : G->enumerate_edges()) {
+        const bool u_in_V1 = edge.first->getId() <= half;
+        const bool v_in_V1 = edge.second->getId() > half;
+        if (u_in_V1 != v_in_V1) edges_H.push_back(edge);
+    }
+    const auto H_comparability = convertToComparabilityBigraph(V1, V2, edges_H);
+    std::vector<std::shared_ptr<ComparabilityBigraph>> result;
+
+    if (H_comparability->size() > 0) {
+        result = BicliquePartitioner::partition(H_comparability, false);
+    }
+    if (V1.size() > 1) {
+        std::vector<Edge> edges_V1;
+        for (const auto& edge : G->enumerate_edges()) {
+            const bool u_in_V1 = edge.first->getId() <= half;
+            const bool v_in_V1 = edge.second->getId() <= half;
+            if (u_in_V1 and v_in_V1) edges_V1.push_back(edge);
+
+        }
+        const auto G_V1 = std::make_shared<TerrainVisibilityGraph>(V1, edges_V1);
+        auto decomposed_V2 = decomposeRecursive(G_V1);
+        result.insert(result.end(), decomposed_V2.begin(), decomposed_V2.end());
+    }
+    if (V2.size() > 1) {
+        std::vector<Edge> edges_V2;
+        for (const auto& edge : G->enumerate_edges()) {
+            const bool u_in_V2 = edge.first->getId() > half;
+            const bool v_in_V2 = edge.second->getId() > half;
+            if (u_in_V2 and v_in_V2) edges_V2.push_back(edge);
+        }
+        const auto G_V2 = std::make_shared<TerrainVisibilityGraph>(V2, edges_V2);
+        auto decomposed_V2 = decomposeRecursive(G_V2);
+        result.insert(result.end(), decomposed_V2.begin(), decomposed_V2.end());
+    }
+    return result;
+}
+
+std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToComparabilityBigraph(
+    const std::vector<VertexPointer>& V1, const std::vector<VertexPointer>& V2, const std::vector<Edge>& edges_H) {
+
+    const unsigned p = V1.size();
+    const unsigned q = V2.size();
+    const unsigned n = p + q;
+    if (n == 0) return std::make_shared<ComparabilityBigraph>();
+
+    std::vector<VertexPointer> new_vertices;
+    new_vertices.reserve(n);
+
+    std::unordered_map<unsigned, unsigned> coord_usage_dim0;
+    std::unordered_map<unsigned, unsigned> coord_usage_dim1;
+    constexpr unsigned EPSILON = 1;
+    constexpr unsigned SCALE = 1000;
+
+    auto getUniqueCoord = [&](const unsigned base_coord, const unsigned dim) -> unsigned {
+        auto& coord_usage = (dim == 0) ? coord_usage_dim0 : coord_usage_dim1;
+        const unsigned multiplier = coord_usage[base_coord];
+        coord_usage[base_coord]++;
+        return base_coord + multiplier * EPSILON;
+    };
+
+    for (unsigned i = 0; i < p; i++) {
+        const auto& v = V1[i];
+        unsigned id = v->getId();
+        const unsigned min_neighbor = findMinNeighbor(v, edges_H);
+        const unsigned x = getUniqueCoord(id * SCALE, 0);
+        const unsigned y = getUniqueCoord(
+                min_neighbor != std::numeric_limits<unsigned>::max() ? min_neighbor * SCALE - SCALE / 2 : id * SCALE - SCALE / 2,
+                1);
+        std::vector embedding = {x, y};
+        auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 0, embedding);
+        new_vertices.push_back(new_v);
+    }
+
+    for (unsigned i = 0; i < q; i++) {
+        const auto& v = V2[i];
+        unsigned id = v->getId();
+        const unsigned max_neighbor = findMaxNeighbor(v, edges_H);
+        const unsigned x = getUniqueCoord(
+            max_neighbor != std::numeric_limits<unsigned>::min() ? static_cast<unsigned>(max_neighbor) * SCALE + SCALE / 2: id * SCALE + SCALE / 2,
+            0);
+        const unsigned y = getUniqueCoord(id * SCALE, 1);
+        std::vector embedding = {x, y};
+        auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 1, embedding);
+        new_vertices.push_back(new_v);
+    }
+
+    auto result = std::make_shared<ComparabilityBigraph>(new_vertices, p, q, 2, n * SCALE);
+    result->constructE(true);
+    return result;
+}
+
+unsigned CappedGraphDecomposition::findMinNeighbor(const VertexPointer& v, const std::vector<Edge>& edges) {
+    unsigned min_id = std::numeric_limits<unsigned>::max();
+    for (const auto&[u, w] : edges) {
+        u == v ? min_id = std::min(min_id, w->getId()) : min_id = std::min(min_id, u->getId());
+    }
+    return min_id;
+}
+
+unsigned CappedGraphDecomposition::findMaxNeighbor(const VertexPointer& v, const std::vector<Edge>& edges) {
+    unsigned max_id = std::numeric_limits<unsigned>::min();
+    for (const auto&[u, w] : edges) {
+        u == v ? max_id = std::max(max_id, w->getId()) : max_id = std::max(max_id, u->getId());
+    }
+    return max_id;
 }

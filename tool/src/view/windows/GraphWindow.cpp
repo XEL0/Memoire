@@ -56,18 +56,18 @@ ComparabilityBigraphWindow::~ComparabilityBigraphWindow() = default;
 
 void GraphWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
-    const QSize viewSize = graphicsView->viewport()->size();
+    const QSize viewSize = graphics_view->viewport()->size();
     drawable->setSceneDimensions(viewSize.width(), viewSize.height());
-    graphicsScene->setSceneRect(drawable->boundingRect());
+    graphics_scene->setSceneRect(drawable->boundingRect());
 }
 
-void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
+void GraphWindow::setupCanvas(QVBoxLayout* main_layout) {
     auto* headerLayout = new QHBoxLayout();
-    auto* canvasLabel = new QLabel(title);
-    canvasLabel->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
+    auto* canvas_label = new QLabel(title);
+    canvas_label->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
 
-    mainWindowVisibilityManager = new QPushButton("+");
-    mainWindowVisibilityManager->setStyleSheet(
+    main_window_visibility_manager = new QPushButton("+");
+    main_window_visibility_manager->setStyleSheet(
         "QPushButton {"
         "  background-color: white; "
         "  color: black; "
@@ -83,48 +83,48 @@ void GraphWindow::setupCanvas(QVBoxLayout* mainLayout) {
         "}"
     );
 
-    headerLayout->addWidget(canvasLabel);
+    headerLayout->addWidget(canvas_label);
     headerLayout->addStretch();
-    headerLayout->addWidget(mainWindowVisibilityManager);
-    connect(mainWindowVisibilityManager, &QPushButton::clicked,
+    headerLayout->addWidget(main_window_visibility_manager);
+    connect(main_window_visibility_manager, &QPushButton::clicked,
         this, &GraphWindow::onReShowMainWindow);
 
-    mainLayout->addLayout(headerLayout);
+    main_layout->addLayout(headerLayout);
 
-    canvasWidget = new QWidget();
-    canvasWidget->setStyleSheet(
+    canvas_widget = new QWidget();
+    canvas_widget->setStyleSheet(
         "background-color: white; "
         "border: 1px solid #CCCCCC; "
         "border-radius: 4px;"
     );
-    canvasWidget->setMinimumHeight(600);
-    canvasWidget->setMinimumWidth(600);
+    canvas_widget->setMinimumHeight(600);
+    canvas_widget->setMinimumWidth(600);
 
-    auto* canvasLayout = new QVBoxLayout(canvasWidget);
+    auto* canvasLayout = new QVBoxLayout(canvas_widget);
     canvasLayout->setContentsMargins(0, 0, 0, 0);
 
-    graphicsScene = new QGraphicsScene(this);
-    graphicsScene->setBackgroundBrush(QBrush(Qt::white));
+    graphics_scene = new QGraphicsScene(this);
+    graphics_scene->setBackgroundBrush(QBrush(Qt::white));
 
-    graphicsView = new QGraphicsView(graphicsScene, this);
-    graphicsView->setRenderHint(QPainter::Antialiasing);
+    graphics_view = new QGraphicsView(graphics_scene, this);
+    graphics_view->setRenderHint(QPainter::Antialiasing);
 
-    graphicsScene->addItem(drawable.get());
-    graphicsView->resize(600, 600);
+    graphics_scene->addItem(drawable.get());
+    graphics_view->resize(600, 600);
     //graphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
 
-    canvasLayout->addWidget(graphicsView);
-    mainLayout->addWidget(canvasWidget, 3);
+    canvasLayout->addWidget(graphics_view);
+    main_layout->addWidget(canvas_widget, 3);
 }
 
-void GraphWindow::setupConsole(QVBoxLayout* mainLayout) {
-    auto* outputLabel = new QLabel("Output:");
-    outputLabel->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
-    mainLayout->addWidget(outputLabel);
+void GraphWindow::setupConsole(QVBoxLayout* main_layout) {
+    auto* output_label = new QLabel("Output:");
+    output_label->setStyleSheet("color: black; font-weight: 500; font-size: 12px;");
+    main_layout->addWidget(output_label);
 
-    outputTextEdit = new QTextEdit();
-    outputTextEdit->setReadOnly(true);
-    outputTextEdit->setStyleSheet(
+    output_text_edit = new QTextEdit();
+    output_text_edit->setReadOnly(true);
+    output_text_edit->setStyleSheet(
         "QTextEdit {"
         "  background-color: #F0F0F0; "
         "  color: #333333; "
@@ -135,22 +135,22 @@ void GraphWindow::setupConsole(QVBoxLayout* mainLayout) {
         "  font-size: 11px;"
         "}"
     );
-    outputTextEdit->setMinimumHeight(120);
+    output_text_edit->setMinimumHeight(120);
 
-    mainLayout->addWidget(outputTextEdit, 1);
+    main_layout->addWidget(output_text_edit, 1);
 }
 
-void GraphWindow::setupButtonsArea(QVBoxLayout* mainLayout) {
-    auto* controlsWidget = new QWidget();
-    controlsWidget->setStyleSheet("background-color: white;");
-    auto* gridLayout = new QGridLayout(controlsWidget);
-    gridLayout->setContentsMargins(0, 0, 0, 0);
-    gridLayout->setSpacing(10);
-    gridLayout->setColumnStretch(0, 1);
-    gridLayout->setColumnStretch(1, 1);
-    gridLayout->setColumnStretch(2, 1);
-    setupButtons(gridLayout);
-    mainLayout->addWidget(controlsWidget);
+void GraphWindow::setupButtonsArea(QVBoxLayout* main_layout) {
+    auto* controls_widget = new QWidget();
+    controls_widget->setStyleSheet("background-color: white;");
+    auto* grid_layout = new QGridLayout(controls_widget);
+    grid_layout->setContentsMargins(0, 0, 0, 0);
+    grid_layout->setSpacing(10);
+    grid_layout->setColumnStretch(0, 1);
+    grid_layout->setColumnStretch(1, 1);
+    grid_layout->setColumnStretch(2, 1);
+    setupButtons(grid_layout);
+    main_layout->addWidget(controls_widget);
 }
 
 void GraphWindow::setupButtons(QGridLayout* grid_layout) {}
@@ -162,13 +162,13 @@ void ComparabilityBigraphWindow::setupButtons(QGridLayout* grid_layout) {
 }
 
 void ComparabilityBigraphWindow::setupComputeBicliqueCover(QGridLayout* grid_layout) {
-    auto *toggleBicliqueCellWidget = new QWidget();
-    auto *toggleBicliqueLayout = new QHBoxLayout(toggleBicliqueCellWidget);
-    toggleBicliqueLayout->setContentsMargins(0, 0, 0, 0);
-    toggleBicliqueLayout->setSpacing(8);
+    auto *toggle_biclique_cell_widget = new QWidget();
+    auto *toggle_biclique_layout = new QHBoxLayout(toggle_biclique_cell_widget);
+    toggle_biclique_layout->setContentsMargins(0, 0, 0, 0);
+    toggle_biclique_layout->setSpacing(8);
 
-    showStepsCheckBox = new QCheckBox();
-    showStepsCheckBox->setStyleSheet(
+    optimize_size_button = new QCheckBox();
+    optimize_size_button->setStyleSheet(
         "QCheckBox {"
         "  width: 40px; "
         "  height: 40px; "
@@ -184,14 +184,14 @@ void ComparabilityBigraphWindow::setupComputeBicliqueCover(QGridLayout* grid_lay
         "  background-color: #00B0AF; "
         "}"
     );
-    showStepsCheckBox->setChecked(false);
-    showStepsCheckBox->setFixedSize(40, 40);
-    toggleBicliqueLayout->addWidget(showStepsCheckBox);
+    optimize_size_button->setChecked(false);
+    optimize_size_button->setFixedSize(40, 40);
+    toggle_biclique_layout->addWidget(optimize_size_button);
 
-    connect(showStepsCheckBox, &QCheckBox::toggled, this, &ComparabilityBigraphWindow::onOptimizeToggled);
+    connect(optimize_size_button, &QCheckBox::toggled, this, &ComparabilityBigraphWindow::onOptimizeToggled);
 
-    computeBicliqueCoverBtn = new QPushButton("Compute biclique cover");
-    computeBicliqueCoverBtn->setStyleSheet(
+    compute_biclique_cover_btn = new QPushButton("Compute biclique cover");
+    compute_biclique_cover_btn->setStyleSheet(
         "QPushButton {"
         "  background-color: white; "
         "  color: black; "
@@ -207,13 +207,13 @@ void ComparabilityBigraphWindow::setupComputeBicliqueCover(QGridLayout* grid_lay
         "  background-color: #E8E8E8;"
         "}"
     );
-    computeBicliqueCoverBtn->setMinimumHeight(40);
-    toggleBicliqueLayout->addWidget(computeBicliqueCoverBtn, 1);
+    compute_biclique_cover_btn->setMinimumHeight(40);
+    toggle_biclique_layout->addWidget(compute_biclique_cover_btn, 1);
 
-    connect(computeBicliqueCoverBtn, &QPushButton::clicked,
+    connect(compute_biclique_cover_btn, &QPushButton::clicked,
             this, &ComparabilityBigraphWindow::onComputeBicliqueCoverClicked);
 
-    grid_layout->addWidget(toggleBicliqueCellWidget, 0, 0, 1, 1);
+    grid_layout->addWidget(toggle_biclique_cell_widget, 0, 0, 1, 1);
 }
 
 void ComparabilityBigraphWindow::setupShowSteps(QGridLayout* grid_layout) {
@@ -286,12 +286,12 @@ void GraphWindow::setupUI() {
 void GraphWindow::appendOutput(const QString &text) const {
     QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
     QString formattedText = QString("[%1] %2").arg(timestamp, text);
-    outputTextEdit->append(formattedText);
-    outputTextEdit->verticalScrollBar()->setValue(outputTextEdit->verticalScrollBar()->maximum());
+    output_text_edit->append(formattedText);
+    output_text_edit->verticalScrollBar()->setValue(output_text_edit->verticalScrollBar()->maximum());
 }
 
 void GraphWindow::clearOutput() {
-    outputTextEdit->clear();
+    output_text_edit->clear();
 }
 
 void ComparabilityBigraphWindow::onComputeBicliqueCoverClicked() {
@@ -349,10 +349,10 @@ void ComparabilityBigraphWindow::onShowStepsClicked() {
 void GraphWindow::onReShowMainWindow() {
     if (is_creator_displayed) {
         creator->hide();
-        mainWindowVisibilityManager->setText("+");
+        main_window_visibility_manager->setText("+");
     } else {
         creator->show();
-        mainWindowVisibilityManager->setText("-");
+        main_window_visibility_manager->setText("-");
     }
     is_creator_displayed = not is_creator_displayed;
 }
@@ -360,11 +360,11 @@ void GraphWindow::onReShowMainWindow() {
 
 
 TerrainWindow::TerrainWindow(QMainWindow *creator, const std::shared_ptr<DrawableTerrainVisibilityGraph>& drawable,
-        const std::shared_ptr<TerrainVisibilityGraph>& visibilityGraph, const std::shared_ptr<Terrain>& terrain):
-    GraphWindow(creator, drawable, visibilityGraph), drawableVisibilityGraph(drawable), visibilityGraph(visibilityGraph), terrain(terrain)
+        const std::shared_ptr<TerrainVisibilityGraph>& visibility_graph, const std::shared_ptr<Terrain>& terrain):
+    GraphWindow(creator, drawable, visibility_graph), drawable_visibility_graph(drawable), visibility_graph(visibility_graph), terrain(terrain)
 {
-    graph = visibilityGraph;
-    title = "Terrain Visibility Graph of " + QString::number(visibilityGraph->size()) + " vertices";
+    graph = visibility_graph;
+    title = "Terrain Visibility Graph of " + QString::number(visibility_graph->size()) + " vertices";
     window_title = "TVG" + QDateTime::currentDateTime().toString("dd/MM-hh:mm:ss");
     setupUI();
 }
@@ -377,8 +377,8 @@ void TerrainWindow::setupButtons(QGridLayout* grid_layout) {
 }
 
 void TerrainWindow::setupToggleView(QGridLayout* grid_layout) {
-    toggleViewBtn = new QPushButton("Show VG as Terrain");
-    toggleViewBtn->setStyleSheet(
+    toggle_view_btn = new QPushButton("Show VG as Terrain");
+    toggle_view_btn->setStyleSheet(
         "QPushButton {"
         "  background-color: white; "
         "  color: black; "
@@ -394,14 +394,42 @@ void TerrainWindow::setupToggleView(QGridLayout* grid_layout) {
         "  background-color: #E8E8E8;"
         "}"
     );
-    toggleViewBtn->setMinimumHeight(40);
-    grid_layout->addWidget(toggleViewBtn, 0, 0, 1, 1);
-    connect(toggleViewBtn, &QPushButton::clicked, this, &TerrainWindow::onToggleViewClicked);
+    toggle_view_btn->setMinimumHeight(40);
+    grid_layout->addWidget(toggle_view_btn, 0, 0, 1, 1);
+    connect(toggle_view_btn, &QPushButton::clicked, this, &TerrainWindow::onToggleViewClicked);
 }
 
 void TerrainWindow::setupComputeBicliqueCover(QGridLayout* grid_layout) {
-    computeBicliqueCoverBtn = new QPushButton("Compute biclique cover");
-    computeBicliqueCoverBtn->setStyleSheet(
+    auto *toggle_biclique_cell_widget = new QWidget();
+    auto *toggle_biclique_layout = new QHBoxLayout(toggle_biclique_cell_widget);
+    toggle_biclique_layout->setContentsMargins(0, 0, 0, 0);
+    toggle_biclique_layout->setSpacing(8);
+
+    optimize_size_button = new QCheckBox();
+    optimize_size_button->setStyleSheet(
+        "QCheckBox {"
+        "  width: 40px; "
+        "  height: 40px; "
+        "}"
+        "QCheckBox::indicator {"
+        "  width: 40px; "
+        "  height: 40px; "
+        "  border: 1px solid #CCCCCC; "
+        "  border-radius: 4px; "
+        "  background-color: #E0E0E0; "
+        "}"
+        "QCheckBox::indicator:checked {"
+        "  background-color: #00B0AF; "
+        "}"
+    );
+    optimize_size_button->setChecked(false);
+    optimize_size_button->setFixedSize(40, 40);
+    toggle_biclique_layout->addWidget(optimize_size_button);
+
+    connect(optimize_size_button, &QCheckBox::toggled, this, &TerrainWindow::onOptimizeToggled);
+
+    compute_biclique_cover_btn = new QPushButton("Compute biclique cover");
+    compute_biclique_cover_btn->setStyleSheet(
         "QPushButton {"
         "  background-color: white; "
         "  color: black; "
@@ -417,10 +445,11 @@ void TerrainWindow::setupComputeBicliqueCover(QGridLayout* grid_layout) {
         "  background-color: #E8E8E8;"
         "}"
     );
-    computeBicliqueCoverBtn->setMinimumHeight(40);
-    grid_layout->addWidget(computeBicliqueCoverBtn, 0, 1, 1, 2);
+    compute_biclique_cover_btn->setMinimumHeight(40);
+    toggle_biclique_layout->addWidget(compute_biclique_cover_btn, 1);
 
-    connect(computeBicliqueCoverBtn, &QPushButton::clicked, this, &TerrainWindow::onComputeBicliqueCoverClicked);
+    connect(compute_biclique_cover_btn, &QPushButton::clicked, this, &TerrainWindow::onComputeBicliqueCoverClicked);
+    grid_layout->addWidget(toggle_biclique_cell_widget, 0, 1, 1, 1);
 }
 
 void TerrainWindow::onToggleViewClicked() {
@@ -428,16 +457,50 @@ void TerrainWindow::onToggleViewClicked() {
 }
 
 void TerrainWindow::onComputeBicliqueCoverClicked() {
-    appendOutput(">>> Biclique Cover computation for Terrain Visibility Graphs");
-    appendOutput(">>> Not yet implemented - requires bipartite decomposition");
+    auto g = std::dynamic_pointer_cast<TerrainVisibilityGraph>(graph);
+    appendOutput("");
+    appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
+    auto p = CappedGraphDecomposition::decompose(g);
+    appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
+    for (const auto& G: p) {
+        auto blue = std::vector<QString>();
+        auto red = std::vector<QString>();
+        for (const auto& v : G->enumerate()) {
+            if (G->isInV1(v)) {
+                blue.push_back(QString::number(v->getId()));
+            } else {
+                red.push_back(QString::number(v->getId()));
+            }
+        }
+        QString msg = "(<span style='color:blue;'>";
+        if (not blue.empty()) {
+            msg += blue[0];
+            for (size_t i = 1; i < blue.size(); ++i) {
+                msg += ", " + blue[i];
+            }
+        }
+        msg += "</span>)◀-▶(<span style='color:red;'>";
+        if (not red.empty()) {
+            msg += red[0];
+            for (size_t i = 1; i < red.size(); ++i) {
+                msg += ", " + red[i];
+            }
+        }
+        msg += "</span>)";
+        appendOutput(msg);
+    }
+}
+
+void TerrainWindow::onOptimizeToggled(const bool checked) {
+    optimize = checked;
 }
 
 void TerrainWindow::updateView() {
-    showingTerrain = not showingTerrain;
-    toggleViewBtn->setText(showingTerrain ? "Non-ordered Display": "Display As Terrain");
-    drawableVisibilityGraph->drawAsTerrain(showingTerrain);
-    const QSize viewSize = graphicsView->viewport()->size();
+    showing_terrain = not showing_terrain;
+    toggle_view_btn->setText(showing_terrain ? "Non-ordered Display": "Display As Terrain");
+    drawable_visibility_graph->drawAsTerrain(showing_terrain);
+    const QSize viewSize = graphics_view->viewport()->size();
     drawable->setSceneDimensions(viewSize.width(), viewSize.height());
-    graphicsScene->setSceneRect(drawable->boundingRect());
-    graphicsScene->update();
+    graphics_scene->setSceneRect(drawable->boundingRect());
+    graphics_scene->update();
 }

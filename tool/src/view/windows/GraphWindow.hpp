@@ -20,24 +20,23 @@ protected slots:
 
 protected:
     void setupUI();
-    void setupCanvas(QVBoxLayout *mainLayout);
-    void setupConsole(QVBoxLayout *mainLayout);
-    void setupButtonsArea(QVBoxLayout *mainLayout);
+    void setupCanvas(QVBoxLayout *main_layout);
+    void setupConsole(QVBoxLayout *main_layout);
+    void setupButtonsArea(QVBoxLayout *main_layout);
     virtual void setupButtons(QGridLayout *grid_layout);
     void appendOutput(const QString &text) const;
     void clearOutput();
 
-    QWidget *canvasWidget{};
-    QTextEdit *outputTextEdit{};
-    QPushButton *mainWindowVisibilityManager{};
+    QWidget *canvas_widget{};
+    QTextEdit *output_text_edit{};
+    QPushButton *main_window_visibility_manager{};
 
     QMainWindow* creator;
     bool is_creator_displayed; //todo static and update on close, should be in another class
     QString title;
     QString window_title;
-    QGraphicsScene* graphicsScene = nullptr;
-    QGraphicsView* graphicsView = nullptr;
-    //std::unique_ptr<DrawableGraph> drawable;
+    QGraphicsScene* graphics_scene = nullptr;
+    QGraphicsView* graphics_view = nullptr;
     std::shared_ptr<DrawableGraph> drawable;
     std::shared_ptr<Graph> graph;
 
@@ -81,12 +80,12 @@ protected:
     void setupShowSteps(QGridLayout *grid_layout);
     void setupComputeBFS(QGridLayout *grid_layout);
 
-    QPushButton *computeBicliqueCoverBtn{};
-    QCheckBox *showStepsCheckBox{};
+    QPushButton *compute_biclique_cover_btn{};
+    QCheckBox *optimize_size_button{};
     QPushButton *showStepsBtn{};
     QPushButton *computeBFSBtn{};
 
-    bool optimize{};
+    bool optimize = false;
 };
 
 
@@ -95,27 +94,30 @@ class TerrainWindow : public GraphWindow {
     Q_OBJECT
 public:
     TerrainWindow(QMainWindow *creator, const std::shared_ptr<DrawableTerrainVisibilityGraph>& drawable,
-        const std::shared_ptr<TerrainVisibilityGraph>& visibilityGraph, const std::shared_ptr<Terrain>& terrain);
+        const std::shared_ptr<TerrainVisibilityGraph>& visibility_graph, const std::shared_ptr<Terrain>& terrain);
     ~TerrainWindow() override;
 
 protected slots:
     void onToggleViewClicked();
     void onComputeBicliqueCoverClicked();
+    void onOptimizeToggled(bool checked);
 
 protected:
     void setupButtons(QGridLayout *grid_layout) override;
     void setupToggleView(QGridLayout *grid_layout);
     void setupComputeBicliqueCover(QGridLayout *grid_layout);
     void updateView();
-    
-    std::shared_ptr<DrawableTerrainVisibilityGraph> drawableVisibilityGraph;
-    std::shared_ptr<TerrainVisibilityGraph> visibilityGraph;
+
+    std::shared_ptr<DrawableTerrainVisibilityGraph> drawable_visibility_graph;
+    std::shared_ptr<TerrainVisibilityGraph> visibility_graph;
     std::shared_ptr<Terrain> terrain;
 
-    QPushButton *toggleViewBtn{};
-    QPushButton *computeBicliqueCoverBtn{};
+    QPushButton *toggle_view_btn{};
+    QPushButton *compute_biclique_cover_btn{};
+    QCheckBox *optimize_size_button{};
 
-    bool showingTerrain = false;
+    bool showing_terrain = false;
+    bool optimize = false;
 };
 
 #endif // MEMOIRE_GRAPHWINDOW_HPP

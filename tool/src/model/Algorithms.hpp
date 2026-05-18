@@ -25,4 +25,20 @@ public:
 };
 
 
+class CappedGraphDecomposition : public Algorithms {
+protected:
+    [[nodiscard]] static std::shared_ptr<ComparabilityBigraph> convertToComparabilityBigraph(
+        const std::vector<VertexPointer>& V1,
+        const std::vector<VertexPointer>& V2,
+        const std::vector<Edge>& edges_H);
+    [[nodiscard]] static std::vector<std::shared_ptr<ComparabilityBigraph>> decomposeRecursive(
+        const std::shared_ptr<TerrainVisibilityGraph>& G);
+    [[nodiscard]] static unsigned findMinNeighbor(const VertexPointer& v, const std::vector<Edge>& edges);
+    [[nodiscard]] static unsigned findMaxNeighbor(const VertexPointer& v, const std::vector<Edge>& edges);
+
+public:
+    [[nodiscard]] static std::vector<std::shared_ptr<ComparabilityBigraph>> decompose(
+        const std::shared_ptr<TerrainVisibilityGraph>& G);
+};
+
 #endif //MEMOIRE_ALGORITHMS_HPP

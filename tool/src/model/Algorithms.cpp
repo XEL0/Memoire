@@ -187,16 +187,22 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::dec
     V1.reserve(half);
     V2.reserve(n - half);
 
-    unsigned idx = 0;
+    unsigned i = 0;
+    unsigned max_id_V1 = 0;
     for (const auto& v : G->enumerate()) {
-        idx < half ? V1.push_back(v) : V2.push_back(v);
-        idx++;
+        if (i < half) {
+            V1.push_back(v);
+            max_id_V1 = v->getId();
+        } else {
+            V2.push_back(v);
+        }
+        i++;
     }
 
     std::vector<Edge> edges_H;
     for (const auto& edge : G->enumerate_edges()) {
-        const bool u_in_V1 = edge.first->getId() <= half;
-        const bool v_in_V1 = edge.second->getId() > half;
+        const bool u_in_V1 = edge.first->getId() <= max_id_V1;
+        const bool v_in_V1 = edge.second->getId() <= max_id_V1;
         if (u_in_V1 != v_in_V1) edges_H.push_back(edge);
     }
     const auto H_comparability = convertToComparabilityBigraph(V1, V2, edges_H);
@@ -208,8 +214,8 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::dec
     if (V1.size() > 1) {
         std::vector<Edge> edges_V1;
         for (const auto& edge : G->enumerate_edges()) {
-            const bool u_in_V1 = edge.first->getId() <= half;
-            const bool v_in_V1 = edge.second->getId() <= half;
+            const bool u_in_V1 = edge.first->getId() <= max_id_V1;
+            const bool v_in_V1 = edge.second->getId() <= max_id_V1;
             if (u_in_V1 and v_in_V1) edges_V1.push_back(edge);
 
         }
@@ -220,8 +226,8 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::dec
     if (V2.size() > 1) {
         std::vector<Edge> edges_V2;
         for (const auto& edge : G->enumerate_edges()) {
-            const bool u_in_V2 = edge.first->getId() > half;
-            const bool v_in_V2 = edge.second->getId() > half;
+            const bool u_in_V2 = edge.first->getId() > max_id_V1;
+            const bool v_in_V2 = edge.second->getId() > max_id_V1;
             if (u_in_V2 and v_in_V2) edges_V2.push_back(edge);
         }
         const auto G_V2 = std::make_shared<TerrainVisibilityGraph>(V2, edges_V2);
@@ -239,6 +245,12 @@ std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToCompara
     const unsigned n = p + q;
     if (n == 0) return std::make_shared<ComparabilityBigraph>();
 
+    std::unordered_set<unsigned> non_isolated_vertices;
+    for (const auto& [u, v] : edges_H) {
+        non_isolated_vertices.insert(u->getId());
+        non_isolated_vertices.insert(v->getId());
+    }
+
     std::vector<VertexPointer> new_vertices;
     new_vertices.reserve(n);
 
@@ -254,14 +266,17 @@ std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToCompara
         return base_coord + multiplier * EPSILON;
     };
 
+    unsigned p_prime = 0;
+    unsigned q_prime = 0;
+
     for (unsigned i = 0; i < p; i++) {
         const auto& v = V1[i];
         unsigned id = v->getId();
+        if (not non_isolated_vertices.contains(id)) continue;
+        p_prime++;
         const unsigned min_neighbor = findMinNeighbor(v, edges_H);
         const unsigned x = getUniqueCoord(id * SCALE, 0);
-        const unsigned y = getUniqueCoord(
-                min_neighbor != std::numeric_limits<unsigned>::max() ? min_neighbor * SCALE - SCALE / 2 : id * SCALE - SCALE / 2,
-                1);
+        const unsigned y = getUniqueCoord(min_neighbor * SCALE - SCALE / 2, 1);
         std::vector embedding = {x, y};
         auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 0, embedding);
         new_vertices.push_back(new_v);
@@ -270,33 +285,55 @@ std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToCompara
     for (unsigned i = 0; i < q; i++) {
         const auto& v = V2[i];
         unsigned id = v->getId();
+        if (not non_isolated_vertices.contains(id)) continue;
+        q_prime++;
         const unsigned max_neighbor = findMaxNeighbor(v, edges_H);
-        const unsigned x = getUniqueCoord(
-            max_neighbor != std::numeric_limits<unsigned>::min() ? static_cast<unsigned>(max_neighbor) * SCALE + SCALE / 2: id * SCALE + SCALE / 2,
-            0);
+        const unsigned x = getUniqueCoord(max_neighbor * SCALE + SCALE / 2, 0);
         const unsigned y = getUniqueCoord(id * SCALE, 1);
         std::vector embedding = {x, y};
         auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 1, embedding);
         new_vertices.push_back(new_v);
     }
 
-    auto result = std::make_shared<ComparabilityBigraph>(new_vertices, p, q, 2, n * SCALE);
+    if (new_vertices.empty()) return std::make_shared<ComparabilityBigraph>();
+
+    /*unsigned point_space_limit = 0;
+    for (const auto& v : new_vertices) {
+        const auto ev = std::dynamic_pointer_cast<EmbeddedVertex>(v);
+        for (unsigned d = 0; d < 2; d++) {
+            point_space_limit = std::max(point_space_limit, ev->at(d));
+        }
+    }*/
+
+    auto result = std::make_shared<ComparabilityBigraph>(new_vertices, p_prime, q_prime, 2, (n+1) * SCALE );
     result->constructE(true);
     return result;
 }
 
 unsigned CappedGraphDecomposition::findMinNeighbor(const VertexPointer& v, const std::vector<Edge>& edges) {
     unsigned min_id = std::numeric_limits<unsigned>::max();
+    const unsigned v_id = v->getId();
+
     for (const auto&[u, w] : edges) {
-        u == v ? min_id = std::min(min_id, w->getId()) : min_id = std::min(min_id, u->getId());
+        if (u->getId() == v_id) {
+            min_id = std::min(min_id, w->getId());
+        } else if (w->getId() == v_id) {
+            min_id = std::min(min_id, u->getId());
+        }
     }
     return min_id;
 }
 
 unsigned CappedGraphDecomposition::findMaxNeighbor(const VertexPointer& v, const std::vector<Edge>& edges) {
-    unsigned max_id = std::numeric_limits<unsigned>::min();
+    unsigned max_id = 0;
+    const unsigned v_id = v->getId();
+
     for (const auto&[u, w] : edges) {
-        u == v ? max_id = std::max(max_id, w->getId()) : max_id = std::max(max_id, u->getId());
+        if (u->getId() == v_id) {
+            max_id = std::max(max_id, w->getId());
+        } else if (w->getId() == v_id) {
+            max_id = std::max(max_id, u->getId());
+        }
     }
     return max_id;
 }

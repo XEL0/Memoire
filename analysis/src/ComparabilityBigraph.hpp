@@ -233,7 +233,7 @@ public:
 	vertices.push_back(new Vertex(21, 1, std::vector<unsigned>{14, 20}));
 	vertices.push_back(new Vertex(4, 1, std::vector<unsigned>{7, 7}));
 	return vertices;
-}
+    }
 
     GraphGenerator() = default;
     ~GraphGenerator() {

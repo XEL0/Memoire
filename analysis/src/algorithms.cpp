@@ -87,45 +87,42 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> Algorithms::partition(
 
 std::vector<std::pair<const Biclique*, unsigned>> Algorithms::bfs(const GraphOfBicliques& graph, const unsigned u, const unsigned v) {
     if (u == v) return {};
-    std::deque<const Biclique*> bfs_queue;
+
+    struct BfsNode {
+        const Biclique* biclique;
+        unsigned vertex;
+    };
+
+    std::deque<BfsNode> bfs_queue;
     std::unordered_set<const Biclique*> visited = {};
     std::unordered_map<const Biclique*, std::vector<std::tuple<const Biclique*, unsigned, int>>> parents = {};
-    unsigned color;
     unsigned depth = 0;
 
     for (const Biclique& biclique : graph.bicliques) {
         if (biclique.contains(u)) {
-            color = biclique.containsP(u) ? 0 : 1;
-            bfs_queue.push_back(&biclique);
+            bfs_queue.push_back({&biclique, u});
             parents[&biclique].emplace_back(nullptr, u, -1);
-            if (color == 0 and biclique.p() > 1 or color == 1 and biclique.q() > 1) continue;
+            if ((biclique.containsP(u) and biclique.p() > 1) or (biclique.containsQ(u) and biclique.q() > 1)) continue;
             visited.insert(&biclique);
         }
     }
     if (bfs_queue.empty()) return {};
 
     unsigned depth_size = bfs_queue.size();
-    while (not bfs_queue.empty() and not bfs_queue.front()->contains(v)) {
-        const Biclique* current = bfs_queue.front();
+
+    while (not bfs_queue.empty() and not bfs_queue.front().biclique->contains(v)) {
+        auto [current, from] = bfs_queue.front();
         bfs_queue.pop_front();
 
-        if (color == 0) {
-            for (const auto q : current->getV2()) {
-                for (const Biclique& biclique : graph.bicliques) {
-                    if (biclique.containsQ(q) and not visited.contains(&biclique)) {
-                        bfs_queue.push_back(&biclique);
+        std::cout << *current << std::endl;
+        auto neighbors = current->containsP(from) ? current->getV2() : current->getV1();
+        for (const auto neigh : neighbors) {
+            for (const Biclique& biclique : graph.bicliques) {
+                if (biclique.contains(neigh)) {
+                    if (not visited.contains(&biclique)) {
+                        bfs_queue.push_back({&biclique, neigh});
                         visited.insert(&biclique);
-                        parents[&biclique].emplace_back(current, q, depth);
-                    }
-                }
-            }
-        } else {
-            for (const auto p : current->getV1()) {
-                for (const Biclique& biclique : graph.bicliques) {
-                    if (biclique.containsP(p) and not visited.contains(&biclique)) {
-                        bfs_queue.push_back(&biclique);
-                        visited.insert(&biclique);
-                        parents[&biclique].emplace_back(current, p, depth);
+                        parents[&biclique].emplace_back(current, from, depth);
                     }
                 }
             }
@@ -134,14 +131,15 @@ std::vector<std::pair<const Biclique*, unsigned>> Algorithms::bfs(const GraphOfB
         if (depth_size == 0) {
             depth += 1;
             depth_size = bfs_queue.size();
-            color = !color;
         }
     }
     if (bfs_queue.empty()) return {};
 
     std::vector<std::pair<const Biclique*, unsigned>> path;
-    const Biclique* end = bfs_queue.front();
-    path.emplace_back(end, v);
+    const Biclique* end = bfs_queue.front().biclique;
+    unsigned end_vertex = bfs_queue.front().vertex;
+    path.emplace_back(end, end_vertex);
+
 
     while (end != nullptr) {
         auto x = parents[end];

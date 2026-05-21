@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    const auto vertices = gg->generatePreset3();
+    const auto vertices = gg->generatePreset1();
     const auto CBg = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim);
     const auto x = Algorithms::partition(CBg, true, 0);
 
@@ -40,10 +40,26 @@ int main(int argc, char *argv[]) {
         std::cout << *G << std::endl;
     }
     const auto graph = GraphOfBicliques(bicliques, 0, 0);
-    auto path = Algorithms::bfs(graph, 14, 0);
+
+
+    std::vector<Biclique> bicliques2;
+    Biclique b1 = {std::unordered_set<unsigned>{3}, std::unordered_set<unsigned>{8}};
+    Biclique b2 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{8}};
+    Biclique b3 = {std::unordered_set<unsigned>{8}, std::unordered_set<unsigned>{5,2}};
+    Biclique b4 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{0, 9}};
+    Biclique b5 = {std::unordered_set<unsigned>{2}, std::unordered_set<unsigned>{3}};
+    bicliques2.push_back(b1);
+    bicliques2.push_back(b2);
+    bicliques2.push_back(b3);
+    bicliques2.push_back(b4);
+    bicliques2.push_back(b5);
+    const auto graph2 = GraphOfBicliques(bicliques2, 0, 0);
+
+    auto path = Algorithms::bfs(graph2, 2, 0);
+    std::cout << "Path length = " << path.size() << std::endl;
     std::cout << "Path: " << std::endl;
-    for (const auto& e : path) {
-        std::cout << *e << std::endl;
+    for (const auto& [biclique, vertex] : path) {
+        std::cout << *biclique << " " << vertex << std::endl;
     }
 
     delete gg;

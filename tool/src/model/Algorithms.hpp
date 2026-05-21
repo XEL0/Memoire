@@ -35,6 +35,8 @@ protected:
         const std::shared_ptr<TerrainVisibilityGraph>& G);
     [[nodiscard]] static unsigned findMinNeighbor(const VertexPointer& v, const std::vector<Edge>& edges);
     [[nodiscard]] static unsigned findMaxNeighbor(const VertexPointer& v, const std::vector<Edge>& edges);
+    [[nodiscard]] static std::unordered_map<unsigned, std::pair<unsigned, unsigned>> findMinAndMaxNeighborhood(
+        const std::vector<VertexPointer>& V1, const std::vector<VertexPointer>& V2, const std::vector<Edge>& edges);
 
 public:
     [[nodiscard]] static std::vector<std::shared_ptr<ComparabilityBigraph>> decompose(

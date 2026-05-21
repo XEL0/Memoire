@@ -208,7 +208,7 @@ std::vector<std::shared_ptr<ComparabilityBigraph>> CappedGraphDecomposition::dec
     const auto H_comparability = convertToComparabilityBigraph(V1, V2, edges_H);
     std::vector<std::shared_ptr<ComparabilityBigraph>> result;
 
-    if (H_comparability->size() > 0) {
+    if (H_comparability->size() > 1) {
         result = BicliquePartitioner::partition(H_comparability, false);
     }
     if (V1.size() > 1) {
@@ -269,14 +269,16 @@ std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToCompara
     unsigned p_prime = 0;
     unsigned q_prime = 0;
 
+    auto min_max = findMinAndMaxNeighborhood(V1, V2, edges_H);
+
     for (unsigned i = 0; i < p; i++) {
         const auto& v = V1[i];
         unsigned id = v->getId();
         if (not non_isolated_vertices.contains(id)) continue;
         p_prime++;
-        const unsigned min_neighbor = findMinNeighbor(v, edges_H);
+        //const unsigned min_neighbor = findMinNeighbor(v, edges_H);
         const unsigned x = getUniqueCoord(id * SCALE, 0);
-        const unsigned y = getUniqueCoord(min_neighbor * SCALE - SCALE / 2, 1);
+        const unsigned y = getUniqueCoord(min_max[id].first * SCALE - SCALE / 2, 1);
         std::vector embedding = {x, y};
         auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 0, embedding);
         new_vertices.push_back(new_v);
@@ -287,8 +289,8 @@ std::shared_ptr<ComparabilityBigraph> CappedGraphDecomposition::convertToCompara
         unsigned id = v->getId();
         if (not non_isolated_vertices.contains(id)) continue;
         q_prime++;
-        const unsigned max_neighbor = findMaxNeighbor(v, edges_H);
-        const unsigned x = getUniqueCoord(max_neighbor * SCALE + SCALE / 2, 0);
+        //const unsigned max_neighbor = findMaxNeighbor(v, edges_H);
+        const unsigned x = getUniqueCoord(min_max[id].second * SCALE + SCALE / 2, 0);
         const unsigned y = getUniqueCoord(id * SCALE, 1);
         std::vector embedding = {x, y};
         auto new_v = std::make_shared<ColoredEmbeddedVertex>(id, 1, embedding);
@@ -336,4 +338,30 @@ unsigned CappedGraphDecomposition::findMaxNeighbor(const VertexPointer& v, const
         }
     }
     return max_id;
+}
+
+std::unordered_map<unsigned, std::pair<unsigned, unsigned>> CappedGraphDecomposition::findMinAndMaxNeighborhood(
+    const std::vector<VertexPointer>& V1, const std::vector<VertexPointer>& V2, const std::vector<Edge>& edges) {
+    std::unordered_map<unsigned, std::pair<unsigned, unsigned>> neighbors;
+
+    // .first = min_neighbor, .second = max_neighbor
+    for (const auto& v : V1) {
+        neighbors[v->getId()].first = std::numeric_limits<unsigned>::max();
+        neighbors[v->getId()].second = 0;
+    }
+    for (const auto& v : V2) {
+        neighbors[v->getId()].first = std::numeric_limits<unsigned>::max();
+        neighbors[v->getId()].second = 0;
+    }
+
+    for (const auto& [u, v] : edges) {
+        unsigned u_id = u->getId();
+        unsigned v_id = v->getId();
+        neighbors[u_id].first = std::min(neighbors[u_id].first, v_id);
+        neighbors[u_id].second = std::max(neighbors[u_id].second, v_id);
+        neighbors[v_id].first = std::min(neighbors[v_id].first, u_id);
+        neighbors[v_id].second = std::max(neighbors[v_id].second, u_id);
+    }
+
+    return neighbors;
 }

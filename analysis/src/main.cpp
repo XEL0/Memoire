@@ -10,9 +10,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     unsigned p = std::stoi(argv[1]), q = std::stoi(argv[2]), dim = std::stoi(argv[3]);*/
-    unsigned p = 20, q = 20, dim = 2;
+    unsigned p = 50000, q = 50000, dim = 2;
     auto gg = new GraphGenerator();
-    //const auto vertices = gg->generate(p, q, dim);
+    const auto vertices = gg->generate(p, q, dim, 1);
+    const auto G = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim);
+    std::cout << "top" << std::endl;
+    const auto x = Algorithms::partition(G, true, 0);
+    std::cout << "top" << std::endl;
+    return 0;
 
     /*std::cout << "std::vector<VertexPointer> V{" << std::endl;
     for (const auto& v : vertices) {
@@ -30,7 +35,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    const auto vertices = gg->generatePreset1();
+    /*const auto vertices = gg->generatePreset1();
     const auto CBg = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim);
     const auto x = Algorithms::partition(CBg, true, 0);
 
@@ -63,5 +68,5 @@ int main(int argc, char *argv[]) {
     }
 
     delete gg;
-    return 0;
+    return 0;*/
 }

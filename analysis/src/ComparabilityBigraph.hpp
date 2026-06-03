@@ -128,11 +128,12 @@ class GraphGenerator {
 protected:
     std::vector<Vertex*> vertices;
     unsigned point_space_limit = -1;
+    unsigned current_seed;
 
     void constructV(const unsigned p, const unsigned q, const unsigned dim) {
         const unsigned size = p + q;
         vertices.reserve(size);
-        auto rg = RandomGenerator(0, size);
+        auto rg = RandomGenerator(0, size, current_seed);
         std::vector<unsigned> ids(size);
         std::iota(ids.begin(), ids.end(), 0);
         std::ranges::shuffle(ids, rg.getRNG());
@@ -145,7 +146,7 @@ protected:
     }
 
     void constructOrdering(const unsigned size, const unsigned dim) const {
-        auto rg = RandomGenerator(0, size);
+        auto rg = RandomGenerator(0, size, current_seed + 1);
         std::vector<unsigned> values(size+1);
         std::iota(values.begin(), values.end(), 0);
 
@@ -157,11 +158,20 @@ protected:
         }
     }
 public:
-    const std::vector<Vertex*>& generate(const unsigned p, const unsigned q, const unsigned dim) {
+    const std::vector<Vertex*>& generate(const unsigned p, const unsigned q, const unsigned dim, const unsigned seed) {
+        current_seed = seed;
         point_space_limit = std::max(1000u, (p+q) * 2);
+        clear();
         constructV(p, q, dim);
         constructOrdering(p+q, dim);
         return vertices;
+    }
+
+    void clear() {
+        for (const auto v : vertices) {
+            delete v;
+        }
+        vertices.clear();
     }
 
     const std::vector<Vertex*>& generatePreset1() {

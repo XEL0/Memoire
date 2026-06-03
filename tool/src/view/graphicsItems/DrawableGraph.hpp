@@ -73,6 +73,7 @@ protected:
     virtual void embedIn0D();
     [[nodiscard]] virtual bool canCompareFrom(const VertexPointer& v) const;
     virtual void drawComparisons(QPainter* painter) const;
+    void drawAxes(QPainter* painter) const;
     void backgroundPaint(QPainter* painter) override;
     void foregroundPaint(QPainter* painter) override;
     void drawEdges(QPainter* painter) const override;

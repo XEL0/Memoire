@@ -197,6 +197,7 @@ bool DrawableComparabilityGraph::canCompareFrom(const VertexPointer& v) const {
 }
 
 void DrawableComparabilityGraph::backgroundPaint(QPainter* painter) {
+    //this->drawAxes(painter);
     this->drawComparisons(painter);
 }
 
@@ -213,6 +214,37 @@ void DrawableComparabilityGraph::foregroundPaint(QPainter* painter) {
     }
 }
 
+void DrawableComparabilityGraph::drawAxes(QPainter* painter) const {
+    auto graph = std::dynamic_pointer_cast<ComparabilityGraph>(G);
+    if (graph->getDimension() == 0) return; // Pas d'axes en 0D
+
+    const double m = minSize();
+
+    painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
+
+    const QPointF xStart = remap(QPointF(0, 0));
+    const QPointF xEnd = remap(QPointF(point_space_bound.second, 0));
+    painter->drawLine(xStart, xEnd);
+
+    const QPointF yStart = remap(QPointF(0, 0));
+    const QPointF yEnd = remap(QPointF(0, point_space_bound.second));
+    painter->drawLine(yStart, yEnd);
+
+    const double arrowSize = m * 0.01;
+
+    painter->setBrush(Qt::black);
+    QPolygonF arrowX;
+    arrowX << xEnd
+           << QPointF(xEnd.x() - arrowSize, xEnd.y() - arrowSize/2)
+           << QPointF(xEnd.x() - arrowSize, xEnd.y() + arrowSize/2);
+    painter->drawPolygon(arrowX);
+
+    QPolygonF arrowY;
+    arrowY << yEnd
+           << QPointF(yEnd.x() - arrowSize/2, yEnd.y() + arrowSize)
+           << QPointF(yEnd.x() + arrowSize/2, yEnd.y() + arrowSize);
+    painter->drawPolygon(arrowY);
+}
 
 QColor DrawableComparabilityBigraph::getColor(const VertexPointer& v) const {
     auto graph = std::dynamic_pointer_cast<ComparabilityBigraph>(G);

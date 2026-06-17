@@ -340,7 +340,9 @@ void ComparabilityBigraphWindow::onComputeBicliqueCoverClicked() {
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
     auto p = BicliquePartitioner::partition(g, optimize);
-    appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
+    size_t total_size = 0;
+    for (const auto& G : p) total_size += G->enumerate().size();
+    appendOutput(QString(">>> Biclique cover of %1 bicliques, size %2").arg(p.size()).arg(total_size));
     for (const auto& G: p) {
         auto blue = std::vector<QString>();
         auto red = std::vector<QString>();
@@ -528,7 +530,9 @@ void TerrainWindow::onComputeBicliqueCoverClicked() {
     appendOutput("");
     appendOutput(">>> Biclique Cover Computation " + QString(optimize ? "with size optimization" : "without size optimization"));
     auto p = CappedGraphDecomposition::decompose(g);
-    appendOutput(QString(">>> Biclique cover of size %1 found").arg(p.size()));
+    size_t total_size = 0;
+    for (const auto& G : p) total_size += G->enumerate().size();
+    appendOutput(QString(">>> Biclique cover of %1 bicliques, size %2").arg(p.size()).arg(total_size));
     for (const auto& G: p) {
         auto blue = std::vector<QString>();
         auto red = std::vector<QString>();

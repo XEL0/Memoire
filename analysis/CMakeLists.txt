@@ -11,7 +11,7 @@ add_executable(Analysis
         src/Bigraph.hpp
         src/ComparabilityBigraph.hpp
         src/RandomGenerator.hpp
-        src/experiment.cpp
+        src/main.cpp
 )
 
 #target_include_directories(analysis PRIVATE src)

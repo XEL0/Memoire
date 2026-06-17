@@ -410,11 +410,11 @@ void MainWindow::onGenerateClicked() {
         int blueVertices = params["Blue Vertices"].toInt();
         int redVertices = params["Red Vertices"].toInt();
         int dimensions = params["Dimensions"].toInt();
-        const auto graph = std::make_shared<ComparabilityBigraph>();
+        /*const auto graph = std::make_shared<ComparabilityBigraph>();
         graph->generate(blueVertices, redVertices, dimensions, (blueVertices + redVertices) * 100);
-        graph->constructE(true);
+        graph->constructE(true);*/
 
-        /*std::vector<VertexPointer> V{
+        std::vector<VertexPointer> V{
             std::make_shared<ColoredEmbeddedVertex>(3, 0, std::vector<unsigned>{146, 394}),
             std::make_shared<ColoredEmbeddedVertex>(1, 0, std::vector<unsigned>{457, 841}),
             std::make_shared<ColoredEmbeddedVertex>(6, 0, std::vector<unsigned>{379, 17}),
@@ -426,8 +426,9 @@ void MainWindow::onGenerateClicked() {
             std::make_shared<ColoredEmbeddedVertex>(4, 1, std::vector<unsigned>{196, 336}),
             std::make_shared<ColoredEmbeddedVertex>(9, 1, std::vector<unsigned>{831, 118}),
         };
-        auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);*/
-
+        auto graph = std::make_shared<ComparabilityBigraph>(std::move(V), 5 , 5, 2, 900);
+        graph->constructE(true);
+        
         /*std::vector<VertexPointer> V{
             std::make_shared<ColoredEmbeddedVertex>(36, 0, std::vector<unsigned>{20, 31}),
             std::make_shared<ColoredEmbeddedVertex>(0, 0, std::vector<unsigned>{5, 5}),

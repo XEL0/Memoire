@@ -7,8 +7,11 @@
 #include <memory>
 #include <ostream>
 #include <ranges>
+#include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include "Bigraph.hpp"
 
 constexpr const char* BLUE = "\033[34m";
 constexpr const char* RED = "\033[31m";
@@ -169,6 +172,14 @@ public:
     void generate(unsigned p, unsigned q, unsigned dim, unsigned point_space_limit);
     bool isComplete();
     using ComparabilityGraph::constructE;
+    [[nodiscard]] Biclique toBiclique() const {
+        std::unordered_set<unsigned> V1, V2;
+        for (const auto& v : vertices) {
+            const auto v_ = dynamic_cast<ColoredVertex*>(v.get());
+            v_->isInV1() ? V1.insert(v_->getId()) : V2.insert(v_->getId());
+        }
+        return {V1, V2};
+    }
 };
 
 

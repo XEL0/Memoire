@@ -241,7 +241,46 @@ void ComparabilityBigraphWindow::setupShowSteps(QGridLayout* grid_layout) {
 }
 
 void ComparabilityBigraphWindow::setupComputeBFS(QGridLayout* grid_layout) {
-    computeBFSBtn = new QPushButton("Compute BFS");
+    auto *bfs_cell_widget = new QWidget();
+    auto *bfs_layout = new QHBoxLayout(bfs_cell_widget);
+    bfs_layout->setContentsMargins(0, 0, 0, 0);
+    bfs_layout->setSpacing(4);
+
+    const QString spinbox_style =
+        "QSpinBox {"
+        "  background-color: white; "
+        "  color: black; "
+        "  border: 1px solid #CCCCCC; "
+        "  border-radius: 4px; "
+        "  padding: 2px; "
+        "  font-size: 12px;"
+        "}"
+        "QSpinBox::up-button, QSpinBox::down-button {"
+        "  width: 0px; border: none;"
+        "}"
+        "QSpinBox:focus {"
+        "  border: 1px solid #00B0AF;"
+        "}";
+
+    bfs_u_spinbox = new QSpinBox();
+    bfs_u_spinbox->setMinimum(0);
+    bfs_u_spinbox->setMaximum(INT_MAX);
+    bfs_u_spinbox->setValue(0);
+    bfs_u_spinbox->setFixedSize(40, 40);
+    bfs_u_spinbox->setAlignment(Qt::AlignCenter);
+    bfs_u_spinbox->setStyleSheet(spinbox_style);
+    bfs_layout->addWidget(bfs_u_spinbox);
+
+    bfs_v_spinbox = new QSpinBox();
+    bfs_v_spinbox->setMinimum(0);
+    bfs_v_spinbox->setMaximum(INT_MAX);
+    bfs_v_spinbox->setValue(0);
+    bfs_v_spinbox->setFixedSize(40, 40);
+    bfs_v_spinbox->setAlignment(Qt::AlignCenter);
+    bfs_v_spinbox->setStyleSheet(spinbox_style);
+    bfs_layout->addWidget(bfs_v_spinbox);
+
+    computeBFSBtn = new QPushButton("BFS");
     computeBFSBtn->setStyleSheet(
         "QPushButton {"
         "  background-color: white; "
@@ -259,9 +298,11 @@ void ComparabilityBigraphWindow::setupComputeBFS(QGridLayout* grid_layout) {
         "}"
     );
     computeBFSBtn->setMinimumHeight(40);
-    grid_layout->addWidget(computeBFSBtn, 0, 1, 1, 1);
+    bfs_layout->addWidget(computeBFSBtn, 1);
 
     connect(computeBFSBtn, &QPushButton::clicked, this, &ComparabilityBigraphWindow::onComputeBFSClicked);
+
+    grid_layout->addWidget(bfs_cell_widget, 0, 1, 1, 1);
 }
 
 void GraphWindow::setupUI() {
@@ -334,8 +375,34 @@ void ComparabilityBigraphWindow::onOptimizeToggled(bool checked) {
 }
 
 void ComparabilityBigraphWindow::onComputeBFSClicked() {
-    appendOutput("Not Implemented");
-    //appendOutput("Show Steps: " + QString(showSteps ? "ON" : "OFF"));
+    const unsigned u = static_cast<unsigned>(bfs_u_spinbox->value());
+    const unsigned v = static_cast<unsigned>(bfs_v_spinbox->value());
+    auto g = std::dynamic_pointer_cast<ComparabilityBigraph>(graph);
+    auto p = BicliquePartitioner::partition(g, optimize);
+    auto bicliques = std::vector<Biclique>();
+    for (const auto& G: p) {
+        bicliques.push_back(G->toBiclique());
+    }
+    appendOutput("");
+    if (u == v) {
+        appendOutput(QString("path from %1 to %2: (same vertex, length 0)").arg(u).arg(v));
+        return;
+    }
+    auto graph_of_biclique = GraphOfBicliques(bicliques, u, v);
+    auto path = Algorithms::bfs(graph_of_biclique, u, v);
+    if (path.empty()) {
+        appendOutput(QString("path from %1 to %2: no path").arg(u).arg(v));
+        return;
+    }
+    QString path_string;
+    for (const auto& [biclique, vertex] : path) {
+        if (!path_string.isEmpty())
+            path_string += " -> ";
+        path_string += QString::number(vertex);
+    }
+    path_string += " -> " + QString::number(v);
+    appendOutput(QString("path from %1 to %2: %3").arg(u).arg(v).arg(path_string));
+    appendOutput(QString("length: %1").arg(path.size() + 1));
 }
 
 void ComparabilityBigraphWindow::onShowStepsClicked() {

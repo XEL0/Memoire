@@ -10,14 +10,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     unsigned p = std::stoi(argv[1]), q = std::stoi(argv[2]), dim = std::stoi(argv[3]);*/
-    unsigned p = 50000, q = 50000, dim = 2;
+    /*unsigned p = 50000, q = 50000, dim = 2;
     auto gg = new GraphGenerator();
     const auto vertices = gg->generate(p, q, dim, 1);
     const auto G = std::make_shared<ComparabilityBigraph>(vertices, p, q, dim);
     std::cout << "top" << std::endl;
     const auto x = Algorithms::partition(G, true, 0);
     std::cout << "top" << std::endl;
-    return 0;
+    return 0;*/
 
     /*std::cout << "std::vector<VertexPointer> V{" << std::endl;
     for (const auto& v : vertices) {
@@ -44,15 +44,21 @@ int main(int argc, char *argv[]) {
         bicliques.push_back(G->toBiclique());
         std::cout << *G << std::endl;
     }
-    const auto graph = GraphOfBicliques(bicliques, 0, 0);
+    const auto graph = GraphOfBicliques(bicliques, 0, 0);*/
 
 
     std::vector<Biclique> bicliques2;
-    Biclique b1 = {std::unordered_set<unsigned>{3}, std::unordered_set<unsigned>{8}};
+    /*Biclique b1 = {std::unordered_set<unsigned>{3}, std::unordered_set<unsigned>{8}};
     Biclique b2 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{8}};
     Biclique b3 = {std::unordered_set<unsigned>{8}, std::unordered_set<unsigned>{5,2}};
     Biclique b4 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{0, 9}};
-    Biclique b5 = {std::unordered_set<unsigned>{2}, std::unordered_set<unsigned>{3}};
+    Biclique b5 = {std::unordered_set<unsigned>{2}, std::unordered_set<unsigned>{3}};*/
+
+    Biclique b1 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{0}};
+    Biclique b2 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{8}};
+    Biclique b3 = {std::unordered_set<unsigned>{6}, std::unordered_set<unsigned>{9}};
+    Biclique b4 = {std::unordered_set<unsigned>{3}, std::unordered_set<unsigned>{8}};
+    Biclique b5 = {std::unordered_set<unsigned>{5, 2}, std::unordered_set<unsigned>{8}};
     bicliques2.push_back(b1);
     bicliques2.push_back(b2);
     bicliques2.push_back(b3);
@@ -60,13 +66,13 @@ int main(int argc, char *argv[]) {
     bicliques2.push_back(b5);
     const auto graph2 = GraphOfBicliques(bicliques2, 0, 0);
 
-    auto path = Algorithms::bfs(graph2, 2, 0);
+    auto path = Algorithms::bfs(graph2, 0, 8);
     std::cout << "Path length = " << path.size() << std::endl;
     std::cout << "Path: " << std::endl;
     for (const auto& [biclique, vertex] : path) {
         std::cout << *biclique << " " << vertex << std::endl;
     }
 
-    delete gg;
-    return 0;*/
+    //delete gg;
+    return 0;
 }

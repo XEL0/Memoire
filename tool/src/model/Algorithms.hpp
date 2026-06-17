@@ -1,10 +1,13 @@
 #ifndef MEMOIRE_ALGORITHMS_HPP
 #define MEMOIRE_ALGORITHMS_HPP
 #include "Graph.hpp"
+#include "Bigraph.hpp"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 class Algorithms {
+public:
+    [[nodiscard]] static std::vector<std::pair<const Biclique*, unsigned>> bfs(const GraphOfBicliques& graph, unsigned u, unsigned v);
 };
 
 class BicliquePartitioner : public Algorithms {

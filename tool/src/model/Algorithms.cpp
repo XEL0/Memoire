@@ -1,6 +1,7 @@
 #include "Algorithms.hpp"
-
+#include "Bigraph.hpp"
 #include <algorithm>
+#include <deque>
 #include <fstream>
 #include <unordered_set>
 #include <iostream>
@@ -364,4 +365,79 @@ std::unordered_map<unsigned, std::pair<unsigned, unsigned>> CappedGraphDecomposi
     }
 
     return neighbors;
+}
+
+
+std::vector<std::pair<const Biclique*, unsigned>> Algorithms::bfs(const GraphOfBicliques& graph, const unsigned u, const unsigned v) {
+    if (u == v) return {};
+
+    struct BfsNode {
+        const Biclique* biclique;
+        unsigned vertex;
+    };
+
+    std::deque<BfsNode> bfs_queue;
+    std::unordered_set<const Biclique*> visited = {};
+    std::unordered_map<const Biclique*, std::vector<std::tuple<const Biclique*, unsigned, int>>> parents = {};
+    unsigned depth = 0;
+
+    for (const Biclique& biclique : graph.bicliques) {
+        if (biclique.contains(u)) {
+            bfs_queue.push_back({&biclique, u});
+            parents[&biclique].emplace_back(nullptr, u, -1);
+            if ((biclique.containsP(u) and biclique.p() > 1) or (biclique.containsQ(u) and biclique.q() > 1)) continue;
+            visited.insert(&biclique);
+        }
+    }
+    if (bfs_queue.empty()) return {};
+
+    unsigned depth_size = bfs_queue.size();
+
+    while (not bfs_queue.empty() and not bfs_queue.front().biclique->contains(v)) {
+        auto [current, from] = bfs_queue.front();
+        bfs_queue.pop_front();
+
+        std::cout << *current << std::endl;
+        auto neighbors = current->containsP(from) ? current->getV2() : current->getV1();
+        for (const auto neigh : neighbors) {
+            for (const Biclique& biclique : graph.bicliques) {
+                if (biclique.contains(neigh)) {
+                    if (not visited.contains(&biclique)) {
+                        bfs_queue.push_back({&biclique, neigh});
+                        visited.insert(&biclique);
+                        parents[&biclique].emplace_back(current, from, depth);
+                    }
+                }
+            }
+        }
+        depth_size -= 1;
+        if (depth_size == 0) {
+            depth += 1;
+            depth_size = bfs_queue.size();
+        }
+    }
+    if (bfs_queue.empty()) return {};
+
+    std::vector<std::pair<const Biclique*, unsigned>> path;
+    const Biclique* end = bfs_queue.front().biclique;
+    unsigned end_vertex = bfs_queue.front().vertex;
+    path.emplace_back(end, end_vertex);
+
+
+    while (end != nullptr) {
+        auto x = parents[end];
+        auto it = std::ranges::find_if(x, [&](const auto& e) { return std::get<2>(e) == depth-1; });
+        if (it == x.end()) break;
+
+        auto prev = std::get<0>(*it);
+        unsigned vertex = std::get<1>(*it);
+
+        if (prev == nullptr) break;
+        path.emplace_back(prev, vertex);
+        end = prev;
+        depth -= 1;
+    }
+    std::ranges::reverse(path);
+
+    return path;
 }

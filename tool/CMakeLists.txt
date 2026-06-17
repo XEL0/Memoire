@@ -29,6 +29,7 @@ add_executable(Tool
         src/view/windows/GraphWindow.cpp
         src/view/windows/StepsWindow.hpp
         src/view/windows/StepsWindow.cpp
+        src/model/Bigraph.hpp
 )
 
 include(FetchContent)

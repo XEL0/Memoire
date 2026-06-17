@@ -6,6 +6,7 @@
 #include <qlabel.h>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTextEdit>
 
 #include "../graphicsItems/DrawableGraph.hpp"
@@ -83,6 +84,8 @@ protected:
     QPushButton *compute_biclique_cover_btn{};
     QCheckBox *optimize_size_button{};
     QPushButton *showStepsBtn{};
+    QSpinBox *bfs_u_spinbox{};
+    QSpinBox *bfs_v_spinbox{};
     QPushButton *computeBFSBtn{};
 
     bool optimize = false;
